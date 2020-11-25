@@ -22,10 +22,10 @@ public interface ColumnMatrix extends Matrix {
     void put(String column, int type, Object value);
 
     /**
-     * 删除column的记录
-     * @param column
+     * 删除某条记录
+     * @param i
      */
-    void remove(String column);
+    void remove(int i);
 
     /**
      *

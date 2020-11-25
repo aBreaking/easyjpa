@@ -62,8 +62,7 @@ public class AxisColumnMatrix implements ColumnMatrix {
 
 
     @Override
-    public void remove(String column) {
-        int i = indexOf(column);
+    public void remove(int i) {
         if (i!=-1){
             for (int j = i; j < ntv.length-1; j++) {
                 ntv[j] = ntv[j+1];

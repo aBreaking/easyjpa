@@ -6,6 +6,7 @@ import com.abreaking.easyjpa.mapper.annotation.Pk;
 import com.abreaking.easyjpa.mapper.annotation.Table;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
+import com.abreaking.easyjpa.mapper.matrix.IndexColumnMatrix;
 import com.abreaking.easyjpa.util.StringUtils;
 import com.abreaking.easyjpa.util.ReflectUtil;
 import com.abreaking.easyjpa.util.SqlUtil;
@@ -32,14 +33,16 @@ import java.util.Map;
  */
 public final class ClassMatrixMapper implements MatrixMapper{
 
-    private Field id = null;
+    private Field id;
     private List<Field> pks = new ArrayList<>();
     private List<Field> mappingFields = new ArrayList<>(); //可映射成实体类的字段
 
     private String tableName;
     private ColumnMatrix idMatrix = new AxisColumnMatrix(1);
     private ColumnMatrix pksMatrix = new AxisColumnMatrix();
-    private ColumnMatrix fieldsMatrix = new AxisColumnMatrix();
+    private ColumnMatrix columnsMatrix = new AxisColumnMatrix();
+    // 字段与列名的映射关系,它不区分字段名与列名的
+    private Map<String,String> fctMap = new HashMap<>();
 
     /**
      * 先暂时用个hashmap把，它应该有个缓存策略
@@ -74,7 +77,10 @@ public final class ClassMatrixMapper implements MatrixMapper{
         return this.pksMatrix;
     }
     public ColumnMatrix matrix(){
-        return this.fieldsMatrix;
+        return this.columnsMatrix;
+    }
+    public String getColumnAndType(String filedName){
+        return fctMap.get(filedName);
     }
 
     public Field getId() {
@@ -101,6 +107,7 @@ public final class ClassMatrixMapper implements MatrixMapper{
             this.tableName =  StringUtils.underscoreName(obj.getSimpleName());
         }
     }
+
     private void initMatrixAndFields(Class obj){
         Field[] fields = obj.getDeclaredFields();
         Map<String, Method> methodMap = ReflectUtil.poGetterMethodsMap(obj);
@@ -141,7 +148,9 @@ public final class ClassMatrixMapper implements MatrixMapper{
                 type = SqlUtil.getSqlType(field.getType());
             }
             this.mappingFields.add(field);
-            this.fieldsMatrix.put(columnName,type,null);
+            this.columnsMatrix.put(columnName,type,null);
+            this.fctMap.put(fieldName,columnName+":"+type);
+            this.fctMap.put(columnName,columnName+":"+type);
         }
     }
 }
