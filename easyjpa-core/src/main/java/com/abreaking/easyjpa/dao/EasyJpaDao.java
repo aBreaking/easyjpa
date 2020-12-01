@@ -10,14 +10,10 @@ import java.util.List;
 public interface EasyJpaDao<T> {
 
     List<T> select(Condition condition);
-    List<T> select(T t);
 
-    int update(Condition condition);
-    int update(T t);
+    int update(Condition set,Condition condition);
 
     int delete(Condition condition);
-    int delete(T t);
 
     int insert(Condition condition);
-    int insert(T t);
 }

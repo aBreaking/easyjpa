@@ -8,7 +8,9 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -36,12 +38,8 @@ public class MyDaoTest {
     @Test
     public void test01() throws Exception {
         User user = new User();
-        user.setUserId(1);
-        /*EasyJpa<User> easyJpa = new EasyJpa<>(user);*/
-        /*easyJpa.addGt("birthday",new SimpleDateFormat("yyyy-MM-dd").parse("2020-09-10"));*/
-
-
-        List<User> list = easyJpaDao.select(user);
+        EasyJpa<User> userEasyJpa = new EasyJpa<>(user);
+        List<User> list = easyJpaDao.select(userEasyJpa);
         System.out.println(list);
     }
 
@@ -54,8 +52,6 @@ public class MyDaoTest {
 
     @Test
     public void test03() throws InterruptedException {
-        run(()->easyJpaDao.select(User.class));
-        run(()->easyJpaDao.select(new User()));
         run(()->easyJpaDao.select(new EasyJpa(new User())));
         Thread.sleep(1000);
     }
@@ -63,9 +59,9 @@ public class MyDaoTest {
     @Test
     public void test04(){
         User user = new User();
-        user.setUserName("san");
+        user.setUserName("zhangsan");
         EasyJpa<User> userEasyJpa = new EasyJpa<>(user);
-        userEasyJpa.setLike("userName");
+        userEasyJpa.addLike("user_name","lisi");
         List list = easyJpaDao.select(userEasyJpa);
         System.out.println(list);
     }
@@ -78,4 +74,50 @@ public class MyDaoTest {
             System.out.println(o);
         }).start();
     }
+
+    @Test
+    public void test05() throws ParseException {
+        EasyJpa<User> userEasyJpa = new EasyJpa<>(User.class);
+        userEasyJpa.addLike("userName","an");
+        userEasyJpa.addGt("birthday",new SimpleDateFormat("yyyy-MM-dd").parse("2020-09-06"));
+
+        List list = easyJpaDao.select(userEasyJpa);
+        System.out.println(list);
+    }
+
+    //TODO
+    @Test
+    public void testUpdate(){
+        User cuser = new User();
+        cuser.setUserId(1);
+
+        User user = new User();
+        user.setUserName("abreaking");
+        user.setBirthday(new Date());
+
+        int update = easyJpaDao.update(new EasyJpa<>(user),new EasyJpa(cuser));
+        System.out.println(update);
+    }
+
+    @Test
+    public void testInsert(){
+        User user = new User();
+        user.setUserName("liwei");
+        user.setUserId(2012);
+        user.setBirthday(new Date());
+        int insert = easyJpaDao.insert(new EasyJpa<>(user));
+        System.out.println(insert);
+    }
+
+    @Test
+    public void testDelete(){
+        User user = new User();
+        user.setUserId(2012);
+        int insert = easyJpaDao.delete(new EasyJpa<>(user));
+        System.out.println(insert);
+    }
+
+
+
+
 }

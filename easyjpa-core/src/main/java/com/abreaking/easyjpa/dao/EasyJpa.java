@@ -1,6 +1,7 @@
 package com.abreaking.easyjpa.dao;
 
 import com.abreaking.easyjpa.mapper.*;
+import com.abreaking.easyjpa.mapper.exception.NoIdOrPkSpecifiedException;
 import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
@@ -23,13 +24,11 @@ public class EasyJpa<T> implements Condition{
     private List<Entry> entryList = new LinkedList<>();
 
     public EasyJpa(T t){
-        Class obj;
-        if (t instanceof Class){
-            obj = (Class) t;
-        }else {
-            obj = t.getClass();
-            initEntryList(t);
-        }
+        this((Class<T>) t.getClass());
+        initEntryList(t);
+    }
+
+    public EasyJpa(Class<T> obj){
         this.obj = obj;
         this.classMatrixRowMapper = ClassMatrixRowMapper.map(obj);
     }
@@ -68,7 +67,7 @@ public class EasyJpa<T> implements Condition{
         entryList.add(new Entry("add",filedName,operate,value));
     }
 
-    public List<Entry> filter(List<Entry> list){
+    private List<Entry> filter(List<Entry> list){
         Map<String,Entry> map = new HashMap<>();
         for (Entry entry : list){
             String columnAndType = classMatrixRowMapper.getColumnAndType(entry.columnName);
@@ -82,6 +81,7 @@ public class EasyJpa<T> implements Condition{
             entry.columnType = type;
             if (map.containsKey(column)){
                 Entry filedEntry = map.get(column);
+                // 如果add 有了 = 这种操作符呢？
                 if (entry.type.equals("add")){
                     filedEntry.addNext(entry);
                 }else if (entry.type.equals("set")){
@@ -117,7 +117,6 @@ public class EasyJpa<T> implements Condition{
         ColumnMatrix condition = new AxisColumnMatrix();
         sqlBuilder.table(classMatrixRowMapper.tableName());
         for (Entry entry : entryList){
-
             condition.put(entry.columnName,entry.columnType,entry.value);
             sqlBuilder.add(entry.columnName,entry.operator);
         }
@@ -125,10 +124,28 @@ public class EasyJpa<T> implements Condition{
     }
 
     @Override
+    public Matrix id() {
+        if (!entryList.isEmpty()){
+            ColumnMatrix condition = new AxisColumnMatrix(1);
+            ColumnMatrix id = classMatrixRowMapper.mapId();
+            if (id == null){
+                throw new NoIdOrPkSpecifiedException(obj.getSimpleName()+"没有指定主键。请使用@Id注解来标识主键！");
+            }
+            String idColumn = id.getColumn(0);
+            for (Entry entry :entryList){
+                if (entry.columnName.equals(idColumn)){
+                    condition.put(idColumn,entry.columnType,entry.value);
+                    return condition;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
         return classMatrixRowMapper.mapRow(rs,rowNum);
     }
-
 
     private static class Entry{
         private String type;
