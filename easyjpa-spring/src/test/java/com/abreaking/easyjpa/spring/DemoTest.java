@@ -9,6 +9,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -16,17 +17,29 @@ import java.util.List;
 public class DemoTest {
 
     @Resource
-    SpringJdbcTemplateExecutor springJdbcTemplateExecutor;
-
-    @Resource
-    EasyJpaDao springDao;
+    EasyJpaDao dao;
 
     @Test
-    public void test01() throws SQLException {
+    public void test01() {
         User user = new User();
         user.setUserId(1);
-        EasyJpa easyJpa = springDao.build(user);
-        List list = easyJpa.query();
+        List<User> list = dao.select(new EasyJpa(user));
         System.out.println(list);
+    }
+
+    @Test
+    public void test02(){
+        User user = new User();
+        user.setUserId(1);
+        int delete = dao.delete(new EasyJpa(user));
+        List list = dao.select(new EasyJpa(user));
+        System.out.println(list);
+        user.setBirthday(new Date());
+        user.setUserName("zhoujielun");
+        dao.insert(new EasyJpa(user));
+        User user1 = new User();user1.setUserId(1);
+        System.out.println(dao.select(new EasyJpa<>(user1)));
+
+
     }
 }

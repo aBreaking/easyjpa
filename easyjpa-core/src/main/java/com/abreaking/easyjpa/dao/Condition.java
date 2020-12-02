@@ -13,5 +13,4 @@ public interface Condition extends RowMapper {
 
     Matrix make(SqlBuilder sqlBuilder);
 
-    Matrix id();
 }

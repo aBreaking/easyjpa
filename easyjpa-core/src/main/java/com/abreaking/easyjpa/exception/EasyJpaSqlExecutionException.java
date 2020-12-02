@@ -1,12 +1,11 @@
-package com.abreaking.easyjpa.dao;
+package com.abreaking.easyjpa.exception;
 
 /**
  * sql执行异常
  * @author liwei_paas
  * @date 2020/11/26
  */
-public class EasyJpaSqlExecutionException extends RuntimeException{
-
+public class EasyJpaSqlExecutionException extends EasyJpaException {
 
     public EasyJpaSqlExecutionException(String message) {
         super(message);
@@ -20,7 +19,4 @@ public class EasyJpaSqlExecutionException extends RuntimeException{
         super(cause);
     }
 
-    public EasyJpaSqlExecutionException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

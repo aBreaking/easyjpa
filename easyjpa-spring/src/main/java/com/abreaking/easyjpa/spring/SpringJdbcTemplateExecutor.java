@@ -3,9 +3,8 @@ package com.abreaking.easyjpa.spring;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.RowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.util.List;
 
 /**
@@ -13,20 +12,25 @@ import java.util.List;
  * @author liwei_paas
  * @date 2020/11/12
  */
-@Component
-public class SpringJdbcTemplateExecutor implements SqlExecutor {
+public class SpringJdbcTemplateExecutor extends JdbcTemplate implements SqlExecutor {
 
-    @Resource
-    private JdbcTemplate jdbcTemplate;
+    public SpringJdbcTemplateExecutor(DataSource dataSource) {
+        super(dataSource);
+    }
 
-    @Override
-    public <T> List<T> queryForList(String preparedSql, Object[] values, int[] types, RowMapper<T> rowMapper) {
-        return jdbcTemplate.query(preparedSql, values, types, (rs, rowNum) -> rowMapper.mapRow(rs, rowNum));
+    public SpringJdbcTemplateExecutor(DataSource dataSource, boolean lazyInit) {
+        super(dataSource, lazyInit);
     }
 
     @Override
-    public int update(String preparedSql, Object[] values, int[] types){
-        return jdbcTemplate.update(preparedSql, values, types);
+    public <T> List<T> doQuery(String preparedSql, Object[] values, int[] types, RowMapper<T> rowMapper) {
+        return query(preparedSql, values, types, (rs, rowNum) -> rowMapper.mapRow(rs, rowNum));
     }
+
+    @Override
+    public int doUpdate(String preparedSql, Object[] values, int[] types){
+        return update(preparedSql, values, types);
+    }
+
 
 }

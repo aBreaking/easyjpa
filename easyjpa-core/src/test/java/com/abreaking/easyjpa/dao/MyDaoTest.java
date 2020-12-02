@@ -1,6 +1,7 @@
 package com.abreaking.easyjpa.dao;
 
 import com.abreaking.easyjpa.User;
+import com.abreaking.easyjpa.dao.impl.EasyJpaDaoImpl;
 import com.abreaking.easyjpa.executor.JdbcSqlExecutor;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.mysql.jdbc.Driver;
@@ -12,7 +13,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MyDaoTest {

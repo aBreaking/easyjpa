@@ -3,9 +3,12 @@ package com.abreaking.easyjpa.spring;
 import com.alibaba.druid.pool.DruidDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.annotation.Resource;
 import javax.sql.DataSource;
+import javax.xml.crypto.Data;
 
 /**
  * 一个数据源配置
@@ -13,7 +16,7 @@ import javax.sql.DataSource;
  * @date 2020/7/14
  */
 @Configuration
-public class DataSourceConfig {
+public class DataSourceConfigTest {
 
     static String JDBC_URl = "jdbc:mysql://localhost:3306/test";
     static String JDBC_USERNAME = "root";
@@ -33,10 +36,4 @@ public class DataSourceConfig {
     public DataSource dataSource(){
         return ds;
     }
-
-    @Bean
-    public JdbcTemplate jdbcTemplate(){
-        return new JdbcTemplate(ds);
-    }
-
 }

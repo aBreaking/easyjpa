@@ -1,6 +1,6 @@
 package com.abreaking.easyjpa.mapper;
 
-import com.abreaking.easyjpa.mapper.exception.EntityObjectNeedsException;
+import com.abreaking.easyjpa.exception.EntityObjectNeedsException;
 import com.abreaking.easyjpa.util.StringUtils;
 
 import java.lang.reflect.Field;

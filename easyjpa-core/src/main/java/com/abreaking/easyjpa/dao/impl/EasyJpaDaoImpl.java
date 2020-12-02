@@ -1,5 +1,8 @@
-package com.abreaking.easyjpa.dao;
+package com.abreaking.easyjpa.dao.impl;
 
+import com.abreaking.easyjpa.dao.Condition;
+import com.abreaking.easyjpa.dao.EasyJpaDao;
+import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.sql.*;
@@ -15,7 +18,7 @@ import java.util.List;
  * @author liwei_paas
  * @date 2020/11/26
  */
-public class EasyJpaDaoImpl<T> implements EasyJpaDao<T>{
+public class EasyJpaDaoImpl<T> implements EasyJpaDao<T> {
 
     Logger logger = LoggerFactory.getLogger(EasyJpaDaoImpl.class);
 
@@ -37,7 +40,7 @@ public class EasyJpaDaoImpl<T> implements EasyJpaDao<T>{
             logger.debug(Arrays.toString(values));
         }
         try {
-            return sqlExecutor.queryForList(prepareSql,values,types,condition);
+            return sqlExecutor.doQuery(prepareSql,values,types,condition);
         } catch (SQLException e) {
             throw new EasyJpaSqlExecutionException(e);
         }
@@ -63,7 +66,7 @@ public class EasyJpaDaoImpl<T> implements EasyJpaDao<T>{
             }
         }
         try {
-            return sqlExecutor.update(sqlBuilder.toSql(),values,types);
+            return sqlExecutor.doUpdate(sqlBuilder.toSql(),values,types);
         } catch (SQLException e) {
             throw new EasyJpaSqlExecutionException(e);
         }
@@ -87,7 +90,7 @@ public class EasyJpaDaoImpl<T> implements EasyJpaDao<T>{
         Object[] values = matrix.values();
         int[] types = matrix.types();
         try {
-            return sqlExecutor.update(prepareSql,values,types);
+            return sqlExecutor.doUpdate(prepareSql,values,types);
         } catch (SQLException e) {
             throw new EasyJpaSqlExecutionException(e);
         }

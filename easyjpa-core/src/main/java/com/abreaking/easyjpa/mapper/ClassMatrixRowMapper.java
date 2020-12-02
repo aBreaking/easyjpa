@@ -6,6 +6,7 @@ import com.abreaking.easyjpa.mapper.annotation.Pk;
 import com.abreaking.easyjpa.mapper.annotation.Table;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
+import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.util.StringUtils;
 import com.abreaking.easyjpa.util.ReflectUtil;
 import com.abreaking.easyjpa.util.SqlUtil;
@@ -22,8 +23,8 @@ import java.util.Map;
 
 
 /**
- * 通用的JPA 实体-表  映射类
- * 通过它你就不需要再麻烦的一一映射 属性->列名 了。
+ * 用来描述实体-表 的映射关系
+ * 通过它你可以一次性搞定  属性名->列名，类名->表名的 映射  了
  * 如果你想继承该类，那么你得需要遵守以下的规则：
  *      1、规范化的命名你的字段还有你的类名，驼峰式，比如：你数据库某个表的字段叫做 aaa_bbb_ccc，那么你的字段名就应该是aaaBbbCcc，类名跟表名也是一样的，类名允许跟个后缀 vo 或者 po
  *      2、类名跟表名的映射你也可以使用 DateTable注解，或者你去重写defaultTableName()这个方法。
@@ -32,7 +33,7 @@ import java.util.Map;
  *
  * @author liwei_paas
  */
-public final class ClassMatrixRowMapper implements MatrixMapper,RowMapper{
+public final class ClassMatrixRowMapper {
 
     private Field id;
     private List<Field> pks = new ArrayList<>();
@@ -70,20 +71,19 @@ public final class ClassMatrixRowMapper implements MatrixMapper,RowMapper{
         this.rowMapper = new ClassRowMapper(obj);
     }
 
-    @Override
     public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
         return rowMapper.mapRow(rs,rowNum);
     }
     public String tableName(){
         return this.tableName;
     }
-    public ColumnMatrix mapId(){
+    public Matrix mapId(){
         return this.idMatrix;
     }
-    public ColumnMatrix mapPks(){
+    public Matrix mapPks(){
         return this.pksMatrix;
     }
-    public ColumnMatrix matrix(){
+    public Matrix matrix(){
         return this.columnsMatrix;
     }
     public String getColumnAndType(String filedOrColumnName){
@@ -102,10 +102,6 @@ public final class ClassMatrixRowMapper implements MatrixMapper,RowMapper{
         return mappingFields;
     }
 
-    /**
-     * 表名
-     * @return
-     */
     private void initTableName(Class obj){
         if(obj.isAnnotationPresent(Table.class)){
             Table table = (Table) obj.getAnnotation(Table.class);

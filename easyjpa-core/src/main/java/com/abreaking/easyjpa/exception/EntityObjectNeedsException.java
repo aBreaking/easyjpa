@@ -1,11 +1,11 @@
-package com.abreaking.easyjpa.mapper.exception;
+package com.abreaking.easyjpa.exception;
 
 /**
  * 必须是实体对象
  * @author liwei_paas
  * @date 2020/11/3
  */
-public class EntityObjectNeedsException extends RuntimeException{
+public class EntityObjectNeedsException extends EasyJpaException {
     public EntityObjectNeedsException() {
     }
 
@@ -21,7 +21,4 @@ public class EntityObjectNeedsException extends RuntimeException{
         super(cause);
     }
 
-    public EntityObjectNeedsException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

@@ -22,7 +22,7 @@ public class JdbcSqlExecutor implements SqlExecutor{
     }
 
     @Override
-    public <T> List<T> queryForList(String preparedSql, Object[] values, int[] types,RowMapper<T> rowMapper) throws SQLException {
+    public <T> List<T> doQuery(String preparedSql, Object[] values, int[] types,RowMapper<T> rowMapper) throws SQLException {
         PreparedStatement ps = connection.prepareStatement(preparedSql);
         for (int i = 0; i < values.length; i++) {
             setValue(ps,i+1,types[i],values[i]);
@@ -39,7 +39,7 @@ public class JdbcSqlExecutor implements SqlExecutor{
     }
 
     @Override
-    public int update(String preparedSql, Object[] values, int[] types) throws SQLException {
+    public int doUpdate(String preparedSql, Object[] values, int[] types) throws SQLException {
         PreparedStatement ps = connection.prepareStatement(preparedSql);
         for (int i = 0; i < values.length; i++) {
             setValue(ps,i+1,types[i],values[i]);

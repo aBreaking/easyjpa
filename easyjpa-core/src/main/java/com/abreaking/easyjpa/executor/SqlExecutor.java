@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface SqlExecutor {
 
-    <T> List<T> queryForList(String preparedSql, Object[] values, int[] types, RowMapper<T> rowMapper) throws SQLException;
+    <T> List<T> doQuery(String preparedSql, Object[] values, int[] types, RowMapper<T> rowMapper) throws SQLException;
 
-    int update(String preparedSql, Object[] values,int[] types) throws SQLException;
+    int doUpdate(String preparedSql, Object[] values,int[] types) throws SQLException;
 }

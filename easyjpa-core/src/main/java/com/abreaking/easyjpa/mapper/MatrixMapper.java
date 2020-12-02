@@ -1,6 +1,6 @@
 package com.abreaking.easyjpa.mapper;
 
-import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
+import com.abreaking.easyjpa.mapper.matrix.Matrix;
 
 /**
  * 实体的映射关系描述
@@ -19,18 +19,18 @@ public interface MatrixMapper {
      * 字段->列的映射关系，使用matrix描述，下同
      * @return
      */
-    ColumnMatrix matrix();
+    Matrix matrix();
 
     /**
      * 主键的映射关系
      * @return
      */
-    ColumnMatrix mapId();
+    Matrix mapId();
 
     /**
      * 业务主键的映射关系
      * @return
      */
-    ColumnMatrix mapPks();
+    Matrix mapPks();
 
 }

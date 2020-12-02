@@ -1,13 +1,13 @@
 package com.abreaking.easyjpa.spring.config;
 
-import com.abreaking.easyjpa.dao.EasyJpa;
 import com.abreaking.easyjpa.dao.EasyJpaDao;
-import com.abreaking.easyjpa.executor.SqlExecutor;
+import com.abreaking.easyjpa.dao.impl.EasyJpaDaoImpl;
 import com.abreaking.easyjpa.spring.SpringJdbcTemplateExecutor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 
 /**
  *
@@ -18,21 +18,12 @@ import javax.annotation.Resource;
 public class EasyJpaDaoConfiguration {
 
     @Resource
-    SpringJdbcTemplateExecutor springJdbcTemplateExecutor;
+    DataSource dataSource;
 
     @Bean
     public <T> EasyJpaDao<T> easyJpaDao(){
-        return new EasyJpaDao<T>(){
-
-            @Override
-            public EasyJpa<T> build(Class obj) {
-                return null;
-            }
-
-            @Override
-            public EasyJpa<T> build(T t) {
-                return null;
-            }
-        };
+        SpringJdbcTemplateExecutor executor = new SpringJdbcTemplateExecutor(dataSource,true);
+        return new EasyJpaDaoImpl<>(executor);
     }
+
 }

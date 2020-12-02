@@ -1,13 +1,13 @@
 package com.abreaking.easyjpa.dao;
 
 import com.abreaking.easyjpa.mapper.*;
-import com.abreaking.easyjpa.mapper.exception.NoIdOrPkSpecifiedException;
+import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
 import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.sql.SqlBuilder;
 
-import javax.xml.soap.Node;
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -19,13 +19,16 @@ import java.util.*;
  */
 public class EasyJpa<T> implements Condition{
 
+    // 实体的class对象
     private Class obj;
+    // 实体的映射信息
     private ClassMatrixRowMapper classMatrixRowMapper;
-    private List<Entry> entryList = new LinkedList<>();
+    // 实体的属性描述
+    private List<Entry> entityList = new LinkedList<>();
 
     public EasyJpa(T t){
         this((Class<T>) t.getClass());
-        initEntryList(t);
+        mapEntity(t);
     }
 
     public EasyJpa(Class<T> obj){
@@ -33,14 +36,43 @@ public class EasyJpa<T> implements Condition{
         this.classMatrixRowMapper = ClassMatrixRowMapper.map(obj);
     }
 
-    private void initEntryList(Object entity){
-        ObjectMatrixMapper objectMatrixMapper = new ObjectMatrixMapper(entity);
-        ColumnMatrix matrix = objectMatrixMapper.matrix();
-        String[] columns = matrix.columns();
-        for (int i = 0; i < columns.length; i++) {
-            String c = columns[i];
-            entryList.add(new Entry("set",c,"=",matrix.getValue(i)));
+    public EasyJpa(Class<T> obj,Matrix matrix){
+        this(obj);
+        addEntityList(matrix);
+    }
+
+    /**
+     * 实体对象的映射
+     * @param entity
+     */
+    private void mapEntity(Object entity){
+        List<Field> mappingFields = classMatrixRowMapper.getMappingFields();
+        ColumnMatrix matrix = new AxisColumnMatrix();
+        for (Field field : mappingFields){
+            try {
+                field.setAccessible(true);
+                Object value = field.get(entity);
+                if (value!=null){
+                    String columnAndType = classMatrixRowMapper.getColumnAndType(field.getName());
+                    String[] split = columnAndType.split(":");
+                    matrix.put(split[0],Integer.parseInt(split[1]),value);
+                }
+            } catch (IllegalAccessException e) {
+            }
         }
+        addEntityList(matrix);
+    }
+
+    private void addEntityList(Matrix matrix){
+        String[] columns = matrix.columns();
+        Object[] values = matrix.values();
+        for (int i = 0; i < columns.length; i++) {
+            entityList.add(new Entry("set", columns[i], "=",values[i]));
+        }
+    }
+
+    public void addValues(String filedName,Object value){
+        add(filedName,"=",value);
     }
 
     public void addLike(String filedName,String value){
@@ -60,11 +92,11 @@ public class EasyJpa<T> implements Condition{
     }
 
     private void set(String filedName,String operator){
-        entryList.add(new Entry("set",filedName,operator,null));
+        entityList.add(new Entry("set",filedName,operator,null));
     }
 
     private void add(String filedName,String operate,Object value){
-        entryList.add(new Entry("add",filedName,operate,value));
+        entityList.add(new Entry("add",filedName,operate,value));
     }
 
     private List<Entry> filter(List<Entry> list){
@@ -111,9 +143,13 @@ public class EasyJpa<T> implements Condition{
         return ret;
     }
 
+    public Field id(){
+        return classMatrixRowMapper.getId();
+    }
+
     @Override
     public Matrix make(SqlBuilder sqlBuilder) {
-        List<Entry> entryList = filter(this.entryList);
+        List<Entry> entryList = filter(this.entityList);
         ColumnMatrix condition = new AxisColumnMatrix();
         sqlBuilder.table(classMatrixRowMapper.tableName());
         for (Entry entry : entryList){
@@ -121,25 +157,6 @@ public class EasyJpa<T> implements Condition{
             sqlBuilder.add(entry.columnName,entry.operator);
         }
         return condition;
-    }
-
-    @Override
-    public Matrix id() {
-        if (!entryList.isEmpty()){
-            ColumnMatrix condition = new AxisColumnMatrix(1);
-            ColumnMatrix id = classMatrixRowMapper.mapId();
-            if (id == null){
-                throw new NoIdOrPkSpecifiedException(obj.getSimpleName()+"没有指定主键。请使用@Id注解来标识主键！");
-            }
-            String idColumn = id.getColumn(0);
-            for (Entry entry :entryList){
-                if (entry.columnName.equals(idColumn)){
-                    condition.put(idColumn,entry.columnType,entry.value);
-                    return condition;
-                }
-            }
-        }
-        return null;
     }
 
     @Override

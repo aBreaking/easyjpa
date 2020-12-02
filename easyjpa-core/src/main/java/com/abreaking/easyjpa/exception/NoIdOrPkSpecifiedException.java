@@ -1,11 +1,11 @@
-package com.abreaking.easyjpa.mapper.exception;
+package com.abreaking.easyjpa.exception;
 
 /**
  * 没有指定主键的异常
  * @author liwei_paas
  * @date 2019/11/22
  */
-public class NoIdOrPkSpecifiedException extends RuntimeException{
+public class NoIdOrPkSpecifiedException extends EasyJpaException {
     public NoIdOrPkSpecifiedException() {
     }
 
@@ -21,7 +21,4 @@ public class NoIdOrPkSpecifiedException extends RuntimeException{
         super(cause);
     }
 
-    public NoIdOrPkSpecifiedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }
