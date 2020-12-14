@@ -1,7 +1,6 @@
 package com.abreaking.easyjpa.dao;
 
 import com.abreaking.easyjpa.User;
-import com.abreaking.easyjpa.dao.impl.EasyJpaDaoImpl;
 import com.abreaking.easyjpa.executor.JdbcSqlExecutor;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.mysql.jdbc.Driver;
@@ -33,57 +32,29 @@ public class MyDaoTest {
         return druidDataSource;
     }
 
-    EasyJpaDao easyJpaDao = new EasyJpaDaoImpl(new JdbcSqlExecutor(druidDataSource().getConnection()));
+    EasyJpaDao easyJpaDao = null;
+
+    CurdTemplate<User> userCurdTemplate = new CurdTemplate<>(new JdbcSqlExecutor(druidDataSource().getConnection()));
 
     @Test
-    public void test01() throws Exception {
+    public void test02() throws Exception {
+        System.out.println("select-----------");
+
+        System.out.println(userCurdTemplate.select(new User()));
+
+        System.out.println("insert-----------");
         User user = new User();
-        EasyJpa<User> userEasyJpa = new EasyJpa<>(user);
-        List<User> list = easyJpaDao.select(userEasyJpa);
-        System.out.println(list);
+        user.setUserId(10084);
+        user.setUserName("abc");
+        user.setBirthday(new Date());
+        userCurdTemplate.insert(user);
+        System.out.println(userCurdTemplate.select(new User()));
     }
 
-    @Test
-    public void test02(){
-        EasyJpa easyJpa = new EasyJpa(User.class);
-        List list = easyJpaDao.select(easyJpa);
-        System.out.println(list);
-    }
-
-    @Test
-    public void test03() throws InterruptedException {
-        run(()->easyJpaDao.select(new EasyJpa(new User())));
-        Thread.sleep(1000);
-    }
-
-    @Test
     public void test04(){
-        User user = new User();
-        user.setUserName("zhangsan");
-        EasyJpa<User> userEasyJpa = new EasyJpa<>(user);
-        userEasyJpa.addLike("user_name","lisi");
-        List list = easyJpaDao.select(userEasyJpa);
-        System.out.println(list);
+
     }
 
-    public static void run(Supplier supplier){
-        new Thread(()->{
-            System.out.println(Thread.currentThread().getName());
-            Object o = supplier.get();
-            System.out.println(o.hashCode());
-            System.out.println(o);
-        }).start();
-    }
-
-    @Test
-    public void test05() throws ParseException {
-        EasyJpa<User> userEasyJpa = new EasyJpa<>(User.class);
-        userEasyJpa.addLike("userName","an");
-        userEasyJpa.addGt("birthday",new SimpleDateFormat("yyyy-MM-dd").parse("2020-09-06"));
-
-        List list = easyJpaDao.select(userEasyJpa);
-        System.out.println(list);
-    }
 
     //TODO
     @Test

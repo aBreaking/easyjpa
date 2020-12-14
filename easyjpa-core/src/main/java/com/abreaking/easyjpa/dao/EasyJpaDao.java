@@ -1,5 +1,8 @@
 package com.abreaking.easyjpa.dao;
 
+import com.abreaking.easyjpa.dao.condition.Condition;
+import com.abreaking.easyjpa.mapper.RowMapper;
+
 import java.util.List;
 
 /**
@@ -9,7 +12,7 @@ import java.util.List;
  */
 public interface EasyJpaDao<T> {
 
-    List<T> select(Condition condition);
+    List<T> select(Condition condition, RowMapper<T> rowMapper);
 
     int update(Condition set,Condition condition);
 

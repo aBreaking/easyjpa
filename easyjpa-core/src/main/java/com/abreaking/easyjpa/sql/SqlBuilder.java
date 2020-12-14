@@ -1,6 +1,9 @@
 package com.abreaking.easyjpa.sql;
 
 
+import com.abreaking.easyjpa.dao.AbstractEasyJpa;
+import com.abreaking.easyjpa.mapper.matrix.Matrix;
+
 /**
  * sql语句的构造器
  * 它构造的一般都是预处理的sql语句：形如： select * from table where column = ?
@@ -9,9 +12,9 @@ package com.abreaking.easyjpa.sql;
  */
 public interface SqlBuilder {
 
-    SqlBuilder table(String tableName);
+    void visit(AbstractEasyJpa easyJpa);
 
-    SqlBuilder add(String columnName,String operator);
+    String toPrepareSql();
 
-    String toSql();
+    Matrix toMatrix();
 }

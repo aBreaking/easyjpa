@@ -1,5 +1,7 @@
 package com.abreaking.easyjpa;
 
+import com.abreaking.easyjpa.mapper.annotation.Id;
+
 import java.util.Date;
 
 /**
@@ -8,9 +10,32 @@ import java.util.Date;
  * @date 2020/11/13
  */
 public class User {
+    @Id
     private Integer userId;
     private Date birthday;
     private String userName;
+
+    public User(Integer userId) {
+        this.userId = userId;
+    }
+
+    public User(String userName) {
+        this.userName = userName;
+    }
+
+    public User(Integer userId, String userName) {
+        this.userId = userId;
+        this.userName = userName;
+    }
+
+    public User(Integer userId, Date birthday, String userName) {
+        this.userId = userId;
+        this.birthday = birthday;
+        this.userName = userName;
+    }
+
+    public User() {
+    }
 
     public Integer getUserId() {
         return userId;

@@ -1,5 +1,6 @@
 package com.abreaking.easyjpa.dao;
 
+import com.abreaking.easyjpa.dao.condition.Page;
 import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
 
 import java.util.List;
@@ -26,13 +27,15 @@ public interface EasyJpaTemplate<T> extends EasyJpaDao{
      */
     List<T> query(EasyJpa<T> condition);
 
+    Page<T> queryByPage(EasyJpa<T> condition,Page page);
+
     /**
      * 根据主键直接查询单个结果对象
      * @param obj
-     * @param id
+     * @param idValue
      * @return
      */
-    T get(Class<T> obj,Object id);
+    T get(Class<T> obj,Object idValue);
 
     /**
      * 更新某个对象，只能只能是根据单个对象的主键来进行update操作

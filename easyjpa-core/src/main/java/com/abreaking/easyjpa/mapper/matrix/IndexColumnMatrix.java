@@ -9,6 +9,7 @@ import java.util.Map;
  * @author liwei_paas
  * @date 2020/11/13
  */
+@Deprecated
 public class IndexColumnMatrix implements ColumnMatrix{
 
     ColumnMatrix columnMatrix;

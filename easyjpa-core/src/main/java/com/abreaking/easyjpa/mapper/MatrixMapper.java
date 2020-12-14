@@ -10,27 +10,10 @@ import com.abreaking.easyjpa.mapper.matrix.Matrix;
 public interface MatrixMapper {
 
     /**
-     * 映射后的表名
-     * @return
-     */
-    String tableName();
-
-    /**
      * 字段->列的映射关系，使用matrix描述，下同
      * @return
      */
     Matrix matrix();
 
-    /**
-     * 主键的映射关系
-     * @return
-     */
-    Matrix mapId();
-
-    /**
-     * 业务主键的映射关系
-     * @return
-     */
-    Matrix mapPks();
 
 }

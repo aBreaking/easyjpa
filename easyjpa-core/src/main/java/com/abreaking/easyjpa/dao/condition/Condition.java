@@ -1,7 +1,5 @@
-package com.abreaking.easyjpa.dao;
+package com.abreaking.easyjpa.dao.condition;
 
-import com.abreaking.easyjpa.mapper.RowMapper;
-import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.sql.SqlBuilder;
 
 /**
@@ -9,8 +7,13 @@ import com.abreaking.easyjpa.sql.SqlBuilder;
  * @author liwei_paas
  * @date 2020/11/26
  */
-public interface Condition extends RowMapper {
+public interface Condition {
 
-    Matrix make(SqlBuilder sqlBuilder);
+    /**
+     * 接收一个SqlBuilder，将实体的生成可执行的sql
+     * @param sqlBuilder
+     */
+    void accept(SqlBuilder sqlBuilder);
+
 
 }

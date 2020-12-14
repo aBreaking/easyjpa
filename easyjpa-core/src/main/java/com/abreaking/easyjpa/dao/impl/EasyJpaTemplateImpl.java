@@ -1,24 +1,25 @@
+/*
 package com.abreaking.easyjpa.dao.impl;
 
-import com.abreaking.easyjpa.dao.Condition;
+import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.EasyJpa;
 import com.abreaking.easyjpa.dao.EasyJpaDao;
 import com.abreaking.easyjpa.dao.EasyJpaTemplate;
+import com.abreaking.easyjpa.dao.condition.Page;
 import com.abreaking.easyjpa.exception.EasyJpaException;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
-import com.abreaking.easyjpa.mapper.ClassMatrixRowMapper;
-import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
-import com.abreaking.easyjpa.mapper.matrix.Matrix;
-import com.abreaking.easyjpa.util.MatrixUtil;
+import com.abreaking.easyjpa.mapper.ClassRowMapper;
+import com.abreaking.easyjpa.mapper.RowMapper;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
+*/
 /**
  *
  * @author liwei_paas
  * @date 2020/12/2
- */
+ *//*
+
 public class EasyJpaTemplateImpl<T> implements EasyJpaTemplate<T> {
 
     EasyJpaDao dao;
@@ -30,21 +31,25 @@ public class EasyJpaTemplateImpl<T> implements EasyJpaTemplate<T> {
     @Override
     public List<T> query(T condition) {
         EasyJpa<T> easyJpa = new EasyJpa<>(condition);
-        return query(easyJpa);
+        return select(easyJpa,condition.getClass());
     }
 
     @Override
     public List<T> query(EasyJpa<T> condition) {
-        return dao.select(condition);
+        return select(condition,condition.getObj());
     }
 
     @Override
-    public T get(Class<T> obj, Object id) {
-        ClassMatrixRowMapper map = ClassMatrixRowMapper.map(obj);
-        Matrix matrix = map.mapId();
-        ColumnMatrix columnMatrix = MatrixUtil.addValue(matrix, id);
-        EasyJpa<T> easyJpa = new EasyJpa<>(obj, columnMatrix);
-        List<T> list = dao.select(easyJpa);
+    public Page<T> queryByPage(EasyJpa<T> condition, Page page) {
+        return null;
+    }
+
+    @Override
+    public T get(Class<T> obj, Object idValue) {
+        EasyJpa<T> easyJpa = new EasyJpa(obj);
+        String idName = easyJpa.idColumn();
+        easyJpa.addValues(idName,idValue);
+        List<T> list = select(easyJpa,obj);
         if (list.isEmpty()){
             return null;
         }
@@ -56,28 +61,22 @@ public class EasyJpaTemplateImpl<T> implements EasyJpaTemplate<T> {
 
     @Override
     public int update(T entity) {
-        EasyJpa easyJpa = new EasyJpa(entity);
-        Field id = easyJpa.id();
-        id.setAccessible(true);
-        Object value = null;
-        try {
-            value = id.get(entity);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        EasyJpa set = new EasyJpa(entity);
+        EasyJpa idCondition = new EasyJpa(entity.getClass());
+        String column = idCondition.idColumn();
+        Object value = set.getValue(column);
         if (value == null){
             throw new EasyJpaException("No primary key value specified");
         }
-        EasyJpa idJpa = new EasyJpa(entity.getClass());
-        idJpa.addValues(id.getName(),value);
-        return update(easyJpa,idJpa);
+        idCondition.addValues(column,value);
+        return update(set,idCondition);
     }
 
     @Override
     public int delete(Class obj, Object id) {
         EasyJpa easyJpa = new EasyJpa<>(obj);
-        Field idField = easyJpa.id();
-        easyJpa.addValues(idField.getName(),id);
+        String idColumn = easyJpa.idColumn();
+        easyJpa.addValues(idColumn,id);
         return delete(easyJpa);
     }
 
@@ -86,9 +85,13 @@ public class EasyJpaTemplateImpl<T> implements EasyJpaTemplate<T> {
         return dao.insert(new EasyJpa<>(entity));
     }
 
+    private List<T> select(Condition condition,Class obj){
+        return select(condition,new ClassRowMapper(obj));
+    }
+
     @Override
-    public List select(Condition condition) {
-        return dao.select(condition);
+    public List<T> select(Condition condition, RowMapper rowMapper) {
+        return dao.select(condition,rowMapper);
     }
 
     @Override
@@ -106,3 +109,4 @@ public class EasyJpaTemplateImpl<T> implements EasyJpaTemplate<T> {
         return dao.insert(condition);
     }
 }
+*/

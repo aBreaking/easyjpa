@@ -13,8 +13,6 @@ import com.abreaking.easyjpa.util.SqlUtil;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,31 +31,37 @@ import java.util.Map;
  *
  * @author liwei_paas
  */
-public final class ClassMatrixRowMapper {
+@Deprecated
+public final class ClassMatrixMapper{
+
+    private String tableName;
 
     private Field id;
     private List<Field> pks = new ArrayList<>();
     private List<Field> mappingFields = new ArrayList<>(); //可映射成实体类的字段
 
-    private String tableName;
     private ColumnMatrix idMatrix = new AxisColumnMatrix(1);
     private ColumnMatrix pksMatrix = new AxisColumnMatrix();
     private ColumnMatrix columnsMatrix = new AxisColumnMatrix();
     // 字段与列名的映射关系,它不区分字段名与列名的
     private Map<String,String> fctMap = new HashMap<>();
-    private ClassRowMapper rowMapper;
+
+    /**
+     * 保存对象每个属性的映射关系
+     */
+    private Map<String,Mapper> fcMapper = new HashMap<>();
 
     /**
      * 先暂时用个hashmap把，它应该有个缓存策略
      */
-    private static final Map<Class,ClassMatrixRowMapper> MAPPER_CACHE = new HashMap<>();
+    private static final Map<Class,ClassMatrixMapper> MAPPER_CACHE = new HashMap<>();
 
-    public static ClassMatrixRowMapper map(Class obj){
+    public static ClassMatrixMapper map(Class obj){
         if (!MAPPER_CACHE.containsKey(obj)){
             synchronized (MAPPER_CACHE){
                 if (!MAPPER_CACHE.containsKey(obj)){
-                    ClassMatrixRowMapper classMatrixRowMapper = new ClassMatrixRowMapper(obj);
-                    MAPPER_CACHE.put(obj, classMatrixRowMapper);
+                    ClassMatrixMapper classMatrixMapper = new ClassMatrixMapper(obj);
+                    MAPPER_CACHE.put(obj, classMatrixMapper);
                 }
             }
         }
@@ -65,15 +69,11 @@ public final class ClassMatrixRowMapper {
     }
 
     // 应该对 obj 缓存起来
-    private ClassMatrixRowMapper(Class obj) {
-        this.initTableName(obj);
-        this.initMatrixAndFields(obj);
-        this.rowMapper = new ClassRowMapper(obj);
+    private ClassMatrixMapper(Class obj) {
+        initTableName(obj);
+        initMatrixAndFields(obj);
     }
 
-    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-        return rowMapper.mapRow(rs,rowNum);
-    }
     public String tableName(){
         return this.tableName;
     }
@@ -128,24 +128,24 @@ public final class ClassMatrixRowMapper {
             //字段上的注解处理
             if (field.isAnnotationPresent(Id.class)) {
                 Id id = field.getAnnotation(Id.class);
-                columnName = id.value();
-                type = id.type();
+                columnName = getColumn(id.value(),fieldName);
+                type = getType(id.type(),field.getType());
                 this.id = field;
                 this.idMatrix.put(columnName,type,null);
             }else if (field.isAnnotationPresent(Pk.class)) {
                 Pk pk = field.getAnnotation(Pk.class);
-                columnName = pk.value();
-                type = pk.type();
+                columnName = getColumn(pk.value(),fieldName);
+                type = getType(pk.type(),field.getType());
                 this.pks.add(field);
                 this.pksMatrix.put(columnName,type,null);
             }else if (field.isAnnotationPresent(Column.class)){
                 Column column = field.getAnnotation(Column.class);
-                columnName = column.value();
-                type = column.type();
+                columnName = getColumn(column.value(),fieldName);
+                type = getType(column.type(),field.getType());
             }
             //列名及为空的话就采用，默认操作
             if (StringUtils.isEmpty(columnName)){
-                columnName = StringUtils.underscoreName(field.getName());
+                columnName = StringUtils.underscoreName(fieldName);
             }
             if (type == Types.NULL){
                 type = SqlUtil.getSqlType(field.getType());
@@ -154,7 +154,24 @@ public final class ClassMatrixRowMapper {
             this.columnsMatrix.put(columnName,type,null);
             this.fctMap.put(fieldName,columnName+":"+type);
             this.fctMap.put(columnName,columnName+":"+type);
+            Mapper mapper = new Mapper();
+            mapper.setColumnName(columnName);
+            mapper.setColumnType(type);
+            mapper.setField(field);
+            this.fcMapper.put(fieldName,mapper);
+            this.fcMapper.put(columnName,mapper);
         }
     }
 
+    public String getColumn(String value,String defaultValue){
+        return StringUtils.isEmpty(value)?StringUtils.underscoreName(defaultValue):value;
+    }
+
+    public int getType(int value,Class defaultType){
+        return value==0?SqlUtil.getSqlType(defaultType):value;
+    }
+
+    public Map<String, Mapper> getFcMapper() {
+        return fcMapper;
+    }
 }

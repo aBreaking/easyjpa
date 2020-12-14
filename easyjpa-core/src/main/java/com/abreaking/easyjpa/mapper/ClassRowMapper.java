@@ -1,7 +1,6 @@
 package com.abreaking.easyjpa.mapper;
 
 import com.abreaking.easyjpa.exception.EntityObjectNeedsException;
-import com.abreaking.easyjpa.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -19,8 +18,11 @@ public class ClassRowMapper implements RowMapper{
      */
     protected Class obj;
 
+    private ClassMapper classMapper;
+
     public ClassRowMapper(Class obj){
         this.obj = obj;
+        this.classMapper = ClassMapper.map(obj);
     }
     public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
         ResultSetMetaData metaData = rs.getMetaData();
@@ -32,16 +34,18 @@ public class ClassRowMapper implements RowMapper{
         } catch (InstantiationException | IllegalAccessException e) {
             throw new EntityObjectNeedsException(obj+"必须是实体的类，并且至少有一个空的构造方法");
         }
-
         for (int i = 1; i <= columnCount; i++) {
             String columnName = metaData.getColumnName(i);
-            String fieldName = StringUtils.deunderscoreName(columnName);
+            Mapper mapper = classMapper.getMapper(columnName);
+            if (mapper==null){
+                continue;
+            }
             try {
-                Field field = obj.getDeclaredField(fieldName);
+                Field field = mapper.getField();
                 field.setAccessible(true);
                 Object o = getResultSetValue(rs, i, field.getType());
                 field.set(instance,o);
-            } catch (Exception e) {
+            } catch (IllegalAccessException e) {
                 continue;
             }
         }
