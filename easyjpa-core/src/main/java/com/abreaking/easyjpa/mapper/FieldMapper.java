@@ -1,7 +1,7 @@
 package com.abreaking.easyjpa.mapper;
 
-import com.abreaking.easyjpa.mapper.annotation.Column;
-import com.abreaking.easyjpa.mapper.annotation.Id;
+import javax.persistence.Column;
+import javax.persistence.Id;
 import com.abreaking.easyjpa.mapper.annotation.Pk;
 import com.abreaking.easyjpa.util.SqlUtil;
 import com.abreaking.easyjpa.util.StringUtils;
@@ -28,28 +28,20 @@ public class FieldMapper {
     public FieldMapper(Field field){
         this.field = field;
         field.setAccessible(true);
-        //字段上的注解处理
+        // 特殊字段记录
         if (field.isAnnotationPresent(Id.class)) {
-            Id id = field.getAnnotation(Id.class);
-            columnName = id.value();
-            columnType = id.type();
             fieldAnnotation = FIELD_ANNOTATION_ID;
         }else if (field.isAnnotationPresent(Pk.class)) {
-            Pk pk = field.getAnnotation(Pk.class);
-            columnName = pk.value();
-            columnType = pk.type();
             fieldAnnotation = FIELD_ANNOTATION_PK;
-        }else if (field.isAnnotationPresent(Column.class)){
-            Column column = field.getAnnotation(Column.class);
-            columnName = column.value();
-            columnType = column.type();
         }
-        if (StringUtils.isEmpty(columnName)){
+
+        if (field.isAnnotationPresent(Column.class)){
+            Column column = field.getAnnotation(Column.class);
+            columnName = column.name();
+        }else{
             columnName = StringUtils.underscoreName(field.getName());
         }
-        if (columnType == 0){
-            columnType = SqlUtil.getSqlType(field.getType());
-        }
+        columnType = SqlUtil.getSqlType(field.getType());
     }
 
     public Method getGetterMethod() {

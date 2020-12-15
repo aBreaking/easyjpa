@@ -5,7 +5,7 @@ package com.abreaking.easyjpa.util;
  * @author liwei_paas
  * @date 2019/11/1
  */
-public final class StringUtils extends org.apache.commons.lang.StringUtils {
+public final class StringUtils {
 
     /**
      * 将驼峰形式name转为带下划线的形式。name全部小写
@@ -61,5 +61,9 @@ public final class StringUtils extends org.apache.commons.lang.StringUtils {
             result.append(r);
         }
         return result.toString();
+    }
+
+    public static boolean isEmpty(String str) {
+        return str == null || str.length() == 0;
     }
 }

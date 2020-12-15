@@ -1,6 +1,10 @@
 package com.abreaking.easyjpa.spring;
 
+import com.abreaking.easyjpa.dao.EasyJpa;
+import com.abreaking.easyjpa.dao.EasyJpaDao;
+import com.abreaking.easyjpa.dao.condition.Page;
 import com.alibaba.druid.pool.DruidDataSource;
+import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -36,4 +40,6 @@ public class DataSourceConfigTest {
     public DataSource dataSource(){
         return ds;
     }
+
+
 }

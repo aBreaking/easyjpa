@@ -1,9 +1,9 @@
 package com.abreaking.easyjpa.mapper;
 
-import com.abreaking.easyjpa.mapper.annotation.Table;
 import com.abreaking.easyjpa.util.ReflectUtil;
 import com.abreaking.easyjpa.util.StringUtils;
 
+import javax.persistence.Table;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -119,7 +119,7 @@ public class ClassMapper {
     private void initTableName(Class obj){
         if(obj.isAnnotationPresent(Table.class)){
             Table table = (Table) obj.getAnnotation(Table.class);
-            this.tableName = table.value();
+            this.tableName = table.name();
         }else{
             this.tableName =  StringUtils.underscoreName(obj.getSimpleName());
         }
