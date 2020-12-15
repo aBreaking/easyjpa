@@ -31,7 +31,7 @@ public class PageSqlBuilder extends SelectSqlBuilder {
             add(" ORDER BY ",page.getOrderBy());
         }
         if (dialect.equals("mysql")){
-            add(" limit ?,? ",page.getPageNum(),page.getPageSize());
+            add(" limit ?,? ",page.getPageNum()-1,page.getPageSize());
         }
     }
 }
