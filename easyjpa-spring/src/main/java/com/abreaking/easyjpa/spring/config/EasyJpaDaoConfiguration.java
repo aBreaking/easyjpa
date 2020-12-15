@@ -23,7 +23,7 @@ public class EasyJpaDaoConfiguration {
     @Bean
     public <T> EasyJpaDao<T> easyJpaDao(){
         SpringJdbcTemplateExecutor executor = new SpringJdbcTemplateExecutor(dataSource,true);
-        return new EasyJpaDaoImpl<>(executor);
+        return new EasyJpaDaoImpl(executor);
     }
 
 }

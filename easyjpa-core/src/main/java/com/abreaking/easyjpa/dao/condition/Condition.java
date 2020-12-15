@@ -11,6 +11,7 @@ public interface Condition {
 
     /**
      * 接收一个SqlBuilder，将实体的生成可执行的sql
+     * 他会将实体类的属性转换为sql的句柄以及预查询的参数
      * @param sqlBuilder
      */
     void accept(SqlBuilder sqlBuilder);

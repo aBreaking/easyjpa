@@ -23,14 +23,13 @@ public class SpringJdbcTemplateExecutor extends JdbcTemplate implements SqlExecu
     }
 
     @Override
-    public <T> List<T> doQuery(String preparedSql, Object[] values, int[] types, RowMapper<T> rowMapper) {
-        return query(preparedSql, values, types, (rs, rowNum) -> rowMapper.mapRow(rs, rowNum));
+    public <T> List<T> query(String preparedSql, Object[] values, int[] types, RowMapper<T> rowMapper) {
+        return super.query(preparedSql, values, types, (rs, rowNum) -> rowMapper.mapRow(rs, rowNum));
     }
 
     @Override
-    public int doUpdate(String preparedSql, Object[] values, int[] types){
-        return update(preparedSql, values, types);
+    public int update(String preparedSql, Object[] values, int[] types){
+        return super.update(preparedSql, values, types);
     }
-
 
 }

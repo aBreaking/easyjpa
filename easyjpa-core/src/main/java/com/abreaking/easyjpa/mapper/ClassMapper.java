@@ -1,11 +1,7 @@
 package com.abreaking.easyjpa.mapper;
 
-import com.abreaking.easyjpa.mapper.annotation.Column;
-import com.abreaking.easyjpa.mapper.annotation.Id;
-import com.abreaking.easyjpa.mapper.annotation.Pk;
 import com.abreaking.easyjpa.mapper.annotation.Table;
 import com.abreaking.easyjpa.util.ReflectUtil;
-import com.abreaking.easyjpa.util.SqlUtil;
 import com.abreaking.easyjpa.util.StringUtils;
 
 import java.lang.reflect.Field;
@@ -37,9 +33,9 @@ public class ClassMapper {
     /**
      * 字段属性的映射
      */
-    private Mapper idMapper;
-    private List<Mapper> pksMapper = new ArrayList<>();
-    private Map<String,Mapper> fieldsMapper = new HashMap<>(); //可映射成实体类的字段
+    private FieldMapper idFieldMapper;
+    private List<FieldMapper> pksFieldMapper = new ArrayList<>();
+    private Map<String,FieldMapper> fieldsMapper = new HashMap<>(); //可映射成实体类的字段
 
     /**
      * 先暂时用个hashmap把，它应该有个缓存策略
@@ -49,9 +45,7 @@ public class ClassMapper {
     private ClassMapper(Class obj){
         this.obj = obj;
         initTableName(obj);
-        initMatrixAndFields(obj);
-        this.pksMapper = Collections.unmodifiableList(this.pksMapper);
-        this.fieldsMapper = Collections.unmodifiableMap(fieldsMapper);
+        initFieldMapper(obj);
     }
 
     public static ClassMapper map(Class obj){
@@ -70,18 +64,18 @@ public class ClassMapper {
         return tableName;
     }
 
-    public Mapper getIdMapper() {
-        return idMapper;
+    public FieldMapper getIdFieldMapper() {
+        return idFieldMapper;
     }
 
-    public List<Mapper> getPksMapper() {
-        return pksMapper;
+    public List<FieldMapper> getPksFieldMapper() {
+        return pksFieldMapper;
     }
 
-    public Map<String,Mapper> getFieldsMapper() {
+    public Map<String,FieldMapper> getFieldsMapper() {
         return fieldsMapper;
     }
-    public Mapper getMapper(String fieldOrColumnName){
+    public FieldMapper getMapper(String fieldOrColumnName){
         return fieldsMapper.get(fieldOrColumnName);
     }
 
@@ -89,7 +83,7 @@ public class ClassMapper {
      * 初始化 实体类的属性->表字段的映射
      * @param obj
      */
-    private void initMatrixAndFields(Class obj){
+    private void initFieldMapper(Class obj){
         Field[] fields = obj.getDeclaredFields();
         Map<String, Method> methodMap = ReflectUtil.poGetterMethodsMap(obj);
         for (int i = 0; i < fields.length; i++) {
@@ -99,39 +93,22 @@ public class ClassMapper {
                 //如果该字段不是 getter setter字段，就不用再继续了
                 continue;
             }
-            field.setAccessible(true);
-            String columnName = null;
-            int type = 0;
-            Mapper mapper = new Mapper();
-            //字段上的注解处理
-            if (field.isAnnotationPresent(Id.class)) {
-                Id id = field.getAnnotation(Id.class);
-                columnName = id.value();
-                type = id.type();
-                idMapper = mapper;
-            }else if (field.isAnnotationPresent(Pk.class)) {
-                Pk pk = field.getAnnotation(Pk.class);
-                columnName = pk.value();
-                type = pk.type();
-                pksMapper.add(mapper);
-            }else if (field.isAnnotationPresent(Column.class)){
-                Column column = field.getAnnotation(Column.class);
-                columnName = column.value();
-                type = column.type();
+            FieldMapper fieldMapper = new FieldMapper(field);
+            fieldMapper.setGetterMethod(methodMap.get(fieldName));
+            fieldsMapper.put(fieldName, fieldMapper);
+            fieldsMapper.put(fieldMapper.getColumnName(), fieldMapper);
+
+            // id 、 pk等特殊字段记录
+            String fieldAnnotation = fieldMapper.getFieldAnnotation();
+            if (fieldAnnotation.equals(FieldMapper.FIELD_ANNOTATION_ID)){
+                idFieldMapper = fieldMapper;
+            }else if (fieldAnnotation.equals(FieldMapper.FIELD_ANNOTATION_PK)){
+                pksFieldMapper.add(fieldMapper);
             }
-            if (StringUtils.isEmpty(columnName)){
-                columnName = StringUtils.underscoreName(fieldName);
-            }
-            if (type == 0){
-                type = SqlUtil.getSqlType(field.getType());
-            }
-            fieldsMapper.put(fieldName,mapper);
-            fieldsMapper.put(columnName,mapper);
-            mapper.setField(field);
-            mapper.setColumnType(type);
-            mapper.setColumnName(columnName);
-            mapper.setGetterMethod(methodMap.get(fieldName));
         }
+        //映射后的字段不可修改
+        pksFieldMapper = Collections.unmodifiableList(pksFieldMapper);
+        fieldsMapper = Collections.unmodifiableMap(fieldsMapper);
     }
 
     /**

@@ -1,8 +1,6 @@
 package com.abreaking.easyjpa.sql;
 
 import com.abreaking.easyjpa.dao.AbstractEasyJpa;
-import com.abreaking.easyjpa.dao.EasyJpaDao;
-import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
@@ -15,7 +13,7 @@ import com.abreaking.easyjpa.util.SqlUtil;
  */
 public abstract class MatrixSqlBuilder implements SqlBuilder {
     
-    private ColumnMatrix columnMatrix = new AxisColumnMatrix();
+    protected ColumnMatrix columnMatrix = new AxisColumnMatrix();
     protected StringBuilder sqlBuilder = new StringBuilder();
     
     private int i = 0;

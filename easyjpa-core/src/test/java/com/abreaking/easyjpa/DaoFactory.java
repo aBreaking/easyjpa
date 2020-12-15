@@ -1,6 +1,5 @@
 package com.abreaking.easyjpa;
 
-import com.abreaking.easyjpa.dao.EasyJpaDao;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.mysql.jdbc.Driver;
 
@@ -28,7 +27,4 @@ public class DaoFactory {
     }
 
 
-    public static EasyJpaDao getDao() throws SQLException {
-        return null;
-    }
 }

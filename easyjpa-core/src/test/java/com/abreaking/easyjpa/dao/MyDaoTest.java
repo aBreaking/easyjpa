@@ -1,18 +1,17 @@
 package com.abreaking.easyjpa.dao;
 
 import com.abreaking.easyjpa.User;
+import com.abreaking.easyjpa.dao.condition.Page;
+import com.abreaking.easyjpa.dao.impl.EasyJpaDaoImpl;
 import com.abreaking.easyjpa.executor.JdbcSqlExecutor;
+import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.mysql.jdbc.Driver;
 import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class MyDaoTest {
 
@@ -34,58 +33,26 @@ public class MyDaoTest {
 
     EasyJpaDao easyJpaDao = null;
 
-    CurdTemplate<User> userCurdTemplate = new CurdTemplate<>(new JdbcSqlExecutor(druidDataSource().getConnection()));
+    SqlExecutor sqlExecutor = new JdbcSqlExecutor(druidDataSource().getConnection());
+
+    EasyJpaDao dao = new EasyJpaDaoImpl(sqlExecutor);
 
     @Test
-    public void test02() throws Exception {
-        System.out.println("select-----------");
-
-        System.out.println(userCurdTemplate.select(new User()));
-
-        System.out.println("insert-----------");
-        User user = new User();
-        user.setUserId(10084);
-        user.setUserName("abc");
-        user.setBirthday(new Date());
-        userCurdTemplate.insert(user);
-        System.out.println(userCurdTemplate.select(new User()));
+    public void test01(){
+        EasyJpa easyJpa = new EasyJpa(new User());
+        Page page = new Page();
+        page.setPageNum(1);
+        page.setPageSize(2);
+        page.setOrderBy("user_id desc");
+        dao.queryByPage(easyJpa,page);
+        System.out.println(page);
+        prettyPrint(page.getResult());
     }
 
-    public void test04(){
-
-    }
-
-
-    //TODO
-    @Test
-    public void testUpdate(){
-        User cuser = new User();
-        cuser.setUserId(1);
-
-        User user = new User();
-        user.setUserName("abreaking");
-        user.setBirthday(new Date());
-
-        int update = easyJpaDao.update(new EasyJpa<>(user),new EasyJpa(cuser));
-        System.out.println(update);
-    }
-
-    @Test
-    public void testInsert(){
-        User user = new User();
-        user.setUserName("liwei");
-        user.setUserId(2012);
-        user.setBirthday(new Date());
-        int insert = easyJpaDao.insert(new EasyJpa<>(user));
-        System.out.println(insert);
-    }
-
-    @Test
-    public void testDelete(){
-        User user = new User();
-        user.setUserId(2012);
-        int insert = easyJpaDao.delete(new EasyJpa<>(user));
-        System.out.println(insert);
+    private void prettyPrint(List list){
+        for (Object o : list){
+            System.out.println(o);
+        }
     }
 
 

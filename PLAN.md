@@ -16,3 +16,12 @@
     解析出select 出来的列名
 2. sql select 出来的应该是数组result，根据列名->字段名  ，需要传入实体User.class，对照解析
     User user = new User(); user.setId(result.id) ; user.setName(result.name) 
+    
+
+2020年12月8日
+考虑还是先实现sql的执行,template与dao还是有点不明确
+
+多表查询考虑rowMapper 传入多个obj应该可以实现
+
+2020年12月9日
+还是考虑先 改为组装sql片段的方式，参考com.abreaking.easyjpa.com.abreaking.easyjpa.executor.JdbcSqlExecutorTest.append 的实现方法，

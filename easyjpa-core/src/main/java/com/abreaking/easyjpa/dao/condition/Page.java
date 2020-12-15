@@ -315,9 +315,6 @@ public class Page<E> implements Serializable {
         return this;
     }
 
-
-
-
     public String getCountColumn() {
         return countColumn;
     }
