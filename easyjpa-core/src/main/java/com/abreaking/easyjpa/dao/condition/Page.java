@@ -17,11 +17,11 @@ public class Page<E> implements Serializable {
     /**
      * 页码，从1开始
      */
-    private int pageNum;
+    private int pageNum = 1;
     /**
      * 页面大小
      */
-    private int pageSize;
+    private int pageSize = 10;
     /**
      * 起始行
      */
@@ -33,19 +33,15 @@ public class Page<E> implements Serializable {
     /**
      * 总数
      */
-    private long total;
+    private long total = 0;
     /**
      * 总页数
      */
-    private int pages;
+    private int pages = 0;
     /**
      * 包含count查询
      */
     private boolean count = true;
-    /**
-     * 分页合理化
-     */
-    private Boolean reasonable;
     /**
      * 当设置为true的时候，如果pagesize设置为0（或RowBounds的limit=0），就不执行分页，返回全部结果
      */
@@ -141,8 +137,7 @@ public class Page<E> implements Serializable {
     }
 
     public Page<E> setPageNum(int pageNum) {
-        //分页合理化，针对不合理的页码自动处理
-        this.pageNum = ((reasonable != null && reasonable) && pageNum <= 0) ? 1 : pageNum;
+        this.pageNum = pageNum <= 0?1:pageNum;
         return this;
     }
 
@@ -180,23 +175,19 @@ public class Page<E> implements Serializable {
             pages = 0;
         }
         //分页合理化，针对不合理的页码自动处理
-        if ((reasonable != null && reasonable) && pageNum > pages) {
+        if (pageNum > pages) {
             pageNum = pages;
             calculateStartAndEndRow();
         }
     }
 
-    public Boolean getReasonable() {
-        return reasonable;
-    }
 
     public Page<E> setReasonable(Boolean reasonable) {
         if (reasonable == null) {
             return this;
         }
-        this.reasonable = reasonable;
         //分页合理化，针对不合理的页码自动处理
-        if (this.reasonable && this.pageNum <= 0) {
+        if (this.pageNum <= 0) {
             this.pageNum = 1;
             calculateStartAndEndRow();
         }
@@ -255,7 +246,7 @@ public class Page<E> implements Serializable {
      */
     public Page<E> pageNum(int pageNum) {
         //分页合理化，针对不合理的页码自动处理
-        this.pageNum = ((reasonable != null && reasonable) && pageNum <= 0) ? 1 : pageNum;
+        this.pageNum = pageNum <= 0 ? 1 : pageNum;
         return this;
     }
 
@@ -333,7 +324,6 @@ public class Page<E> implements Serializable {
                 ", endRow=" + endRow +
                 ", total=" + total +
                 ", pages=" + pages +
-                ", reasonable=" + reasonable +
                 ", pageSizeZero=" + pageSizeZero +
                 '}';
     }
