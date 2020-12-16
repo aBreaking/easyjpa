@@ -8,7 +8,9 @@ import com.abreaking.easyjpa.dao.condition.Page;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.BaseRowMapper;
+import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.sql.PageSqlBuilder;
+import com.abreaking.easyjpa.sql.SelectSqlBuilder;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -39,7 +41,11 @@ public class EasyJpaDaoImpl<T> extends CurdTemplate implements EasyJpaDao<T> {
     @Override
     public Page<T> queryByPage(EasyJpa<T> condition, Page page) {
         try {
-            List<Object[]> query = sqlExecutor.query("select count(*) from " + condition.getTableName(), new Object[0], new int[0], new BaseRowMapper(Long.class));
+            SelectSqlBuilder selectSqlBuilder = new SelectSqlBuilder();
+            condition.accept(selectSqlBuilder);
+            String conditionPrepareSql = selectSqlBuilder.toPrepareSql();
+            Matrix matrix = selectSqlBuilder.toMatrix();
+            List<Object[]> query =  sqlExecutor.query("select count(*) from ("+conditionPrepareSql+") _ct",matrix.values(),matrix.types(),new BaseRowMapper(Long.class));
             Object[] totalArray = query.get(0);
             Long total = (Long) totalArray[0];
             List<T> list = doSelect(condition, new PageSqlBuilder(page));
