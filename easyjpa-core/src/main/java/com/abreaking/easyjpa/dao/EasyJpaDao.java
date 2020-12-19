@@ -11,14 +11,14 @@ import java.util.List;
  * @author liwei_paas
  * @date 2020/12/2
  */
-public interface EasyJpaDao<T> {
+public interface EasyJpaDao {
 
     /**
      * 将对象作为一个条件，进行条件查询
      * @param condition
      * @return
      */
-    List<T> query(T condition);
+    <T> List<T> query(T condition);
 
     /**
      * 传入自定义的条件，进行条件查询
@@ -26,9 +26,18 @@ public interface EasyJpaDao<T> {
      * @param condition
      * @return
      */
-    List<T> query(EasyJpa<T> condition);
+    <T> List<T> query(EasyJpa<T> condition);
 
-    Page<T> queryByPage(EasyJpa<T> condition,Page page);
+    <T> Page<T> queryByPage(EasyJpa<T> condition,Page page);
+
+    /**
+     * 根据prepareSql查询
+     * 返回 结果集的对象
+     * @param prepareSql
+     * @param values
+     * @return
+     */
+    <T> List<T[]> queryByPrepareSql(String prepareSql,Object[] values,Class<T> type);
 
     /**
      * 根据主键直接查询单个结果对象
@@ -36,7 +45,7 @@ public interface EasyJpaDao<T> {
      * @param idValue
      * @return
      */
-    T get(Class<T> obj,Object idValue);
+    <T> T get(Class<T> obj,Object idValue);
 
     /**
      * 更新某个对象，只能只能是根据单个对象的主键来进行update操作
@@ -45,7 +54,7 @@ public interface EasyJpaDao<T> {
      * @param entity
      * @return
      */
-    void update(T entity) ;
+    <T> void update(T entity) ;
 
     /**
      * 根据主键删除对象，目前只能根据之间来进行删除
@@ -53,12 +62,12 @@ public interface EasyJpaDao<T> {
      * @param id
      * @return
      */
-    void delete(Class<T> obj,Object id);
+    <T> void delete(Class<T> obj,Object id);
 
     /**
      * 新增对象
      * @param entity
      * @return
      */
-    void insert(T entity);
+    <T> void insert(T entity);
 }

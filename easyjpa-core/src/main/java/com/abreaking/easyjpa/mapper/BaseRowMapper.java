@@ -74,8 +74,9 @@ public class BaseRowMapper implements RowMapper{
         }
         else if (Clob.class == requiredType) {
             return rs.getClob(index);
-        }
-        else  {
+        }else if (Object.class == requiredType){
+            return rs.getObject(index);
+        }else  {
             throw new RuntimeException("error type");
         }
     }
