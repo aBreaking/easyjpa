@@ -10,7 +10,7 @@ package com.abreaking.easyjpa.mapper.matrix;
  */
 public class AxisColumnMatrix implements ColumnMatrix {
     /**
-     * 看作空间的坐标系把，x->name,y->type,z->value
+     * 看作空间的坐标系把，x->name,y->type,z->equal
      */
     private Axis<String,Integer,Object>[] ntv ;
 
@@ -94,6 +94,19 @@ public class AxisColumnMatrix implements ColumnMatrix {
     @Override
     public String getColumn(int index) {
         return axis(index).xAxis;
+    }
+
+    @Override
+    public void putAll(Matrix matrix) {
+        String[] columns = matrix.columns();
+        int[] types = matrix.types();
+        Object[] values = matrix.values();
+        if (columns.length==0){
+            return;
+        }
+        for (int i = 0; i < columns.length; i++) {
+            put(columns[i],types[i],values[i]);
+        }
     }
 
     private Axis<String,Integer,Object> axis(int index){

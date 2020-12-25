@@ -39,4 +39,6 @@ public interface ColumnMatrix extends Matrix {
     Object getValue(int index);
 
     String getColumn(int index);
+
+    void putAll(Matrix matrix);
 }
