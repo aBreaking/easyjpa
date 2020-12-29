@@ -1,18 +1,22 @@
-package com.abreaking.easyjpa.dao;
+package com.abreaking.easyjpa.dao.condition;
 
+import com.abreaking.easyjpa.mapper.matrix.Matrix;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
- * 将对象本身视作条件查询体。该接口可以将对象make成条件体（Matrix）以及拼接到Sql描述语句（sqlBuilder）
+ * 条件语句的描述 。 也是prepareSql 片段，它用在EasyJpa中，用来将实体对象描述成sql片段
+ * 比如用来描述如下的sql： user_name like ?
  * @author liwei_paas
  * @date 2020/11/26
  */
 public class Condition {
 
     String fcName;
+    Integer sqlType ;
     String prepare;
-    int sqlType;
     Object[] values;
 
     private Condition(String fcName, String prepare, Object[] values) {
@@ -22,15 +26,23 @@ public class Condition {
     }
 
     /**
-     * FIXME 这里有个问题：prepareSql可以指定什么内容呢？怎么样的格式？
+     * 可直接写入prepareSql，以及value
+     * 这里有个问题：prepareSql可以指定什么内容呢？怎么样的格式？ 是否应该开放该功能？
      * @param prepareSql
-     * @param value
+     * @param values
      * @return
      */
-    protected static Condition to(String prepareSql, Object... value) {
-        return new Condition(null, prepareSql, value);
+    public static Condition prepare(String prepareSql, Object...values) {
+        return new Condition(null, prepareSql, values);
     }
 
+    /**
+     * 基本条件，会自动将条件转为预预处理的sql
+     * @param fcName 字段名或列名
+     * @param operator 操作符，比如 > < = like 等等
+     * @param value 值
+     * @return
+     */
     public static Condition to(String fcName, String operator, Object value) {
         if (operator.indexOf("?")==-1){
             operator += " ?";
@@ -51,7 +63,7 @@ public class Condition {
 
     public static Condition in(String fcName, Object...values) {
         if (values.length==0){
-            return Condition.to(null,null);
+            return Condition.prepare(null,null);
         }
         StringBuilder builder = new StringBuilder("IN (");
         for (int i = 0; i < values.length; i++) {
@@ -81,8 +93,37 @@ public class Condition {
         return values;
     }
 
-    public int getSqlType() {
+    public Integer getSqlType() {
         return sqlType;
+    }
+
+    /**
+     * 将matrix 转为condition
+     * @param matrix
+     * @return
+     */
+    public static List<Condition> matrixToCondition(Matrix matrix){
+        List<Condition> list = new ArrayList<>();
+        if (matrix!=null){
+            String[] columns = matrix.columns();
+            int[] types = matrix.types();
+            Object[] values = matrix.values();
+            for (int i = 0; i < columns.length; i++) {
+                Condition condition = Condition.to(columns[i], "=", values[i]);
+                condition.sqlType = types[i];
+                list.add(condition);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 将condition格式化，因为此时condition里的fcName不知道是列名，还是字段名
+     * @param condition
+     */
+    public static void formatCondition(Condition condition,String columnName,int type){
+        condition.fcName = columnName;
+        condition.sqlType = type;
     }
 
     @Override

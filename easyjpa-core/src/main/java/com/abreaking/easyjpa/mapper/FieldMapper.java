@@ -8,24 +8,26 @@ import com.abreaking.easyjpa.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 /**
- *
+ * 描述 字段->列 之间的映射关系
  * @author liwei_paas
  * @date 2020/12/8
  */
 public class FieldMapper {
-
-    private Method getterMethod;
     private Field field;
+
+    private String filedName;
     private String columnName;
     private int columnType;
-    private String fieldAnnotation = "column";
+    private Method getterMethod;
+    private String fieldAnnotation = "Column";
 
     public static final String FIELD_ANNOTATION_ID = "Id";
     public static final String FIELD_ANNOTATION_PK = "Pk";
 
-    public FieldMapper(Field field){
+    public FieldMapper(Field field,Method method){
         this.field = field;
         field.setAccessible(true);
         // 特殊字段记录
@@ -35,21 +37,16 @@ public class FieldMapper {
             fieldAnnotation = FIELD_ANNOTATION_PK;
         }
 
-        if (field.isAnnotationPresent(Column.class)){
-            Column column = field.getAnnotation(Column.class);
-            columnName = column.name();
-        }else{
-            columnName = StringUtils.underscoreName(field.getName());
-        }
-        columnType = SqlUtil.getSqlType(field.getType());
+        this.columnName = field.isAnnotationPresent(Column.class)?
+                field.getAnnotation(Column.class).name():
+                StringUtils.underscoreName(field.getName());
+        this.columnType = SqlUtil.getSqlType(field.getType());
+        this.getterMethod = method;
+        this.filedName = field.getName();
     }
 
     public Method getGetterMethod() {
         return getterMethod;
-    }
-
-    public void setGetterMethod(Method getterMethod) {
-        this.getterMethod = getterMethod;
     }
 
     public Field getField() {
@@ -68,4 +65,20 @@ public class FieldMapper {
         return fieldAnnotation;
     }
 
+    public String getFiledName() {
+        return filedName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FieldMapper that = (FieldMapper) o;
+        return Objects.equals(field, that.field);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(field);
+    }
 }

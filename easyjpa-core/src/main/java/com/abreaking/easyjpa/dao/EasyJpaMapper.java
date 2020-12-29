@@ -1,70 +1,56 @@
 package com.abreaking.easyjpa.dao;
 
+import com.abreaking.easyjpa.exception.EntityObjectNeedsException;
 import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
-import com.abreaking.easyjpa.exception.NoSuchFieldOrColumnException;
 import com.abreaking.easyjpa.mapper.ClassMapper;
 import com.abreaking.easyjpa.mapper.FieldMapper;
 import com.abreaking.easyjpa.mapper.MatrixMapper;
+import com.abreaking.easyjpa.mapper.RowMapper;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.mapper.matrix.MatrixFactory;
-import com.abreaking.easyjpa.sql.SqlConst;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
 /**
  * 对实体的映射，接收一个实体对象，配合SqlBuilder 可将其处理成可执行的预sql
  * @author liwei_paas
  * @date 2020/12/3
  */
-public abstract class BaseEasyJpa<T> implements MatrixMapper {
+public abstract class EasyJpaMapper<T> implements MatrixMapper,RowMapper {
 
     // 实体的class对象
-    private Class obj;
+    protected Class obj;
 
     // 实体的映射信息
     protected final ClassMapper classMapper;
 
-    private ColumnMatrix matrix = MatrixFactory.createColumnMatrix();
+    protected final ColumnMatrix matrix;
 
-    Map<SqlConst,List<Condition>> conditionMap = new HashMap<>();
-
-    public BaseEasyJpa(T t){
-        this((Class<T>) t.getClass());
-        mapEntity(t);
-    }
-
-    public BaseEasyJpa(Class<T> obj){
+    public EasyJpaMapper(Class<T> obj){
         this.obj = obj;
         this.classMapper = ClassMapper.map(obj);
+        this.matrix = MatrixFactory.createColumnMatrix();
     }
 
-    /**
-     * 将实体对象的属性进行映射
-     * @param entity
-     */
-    private void mapEntity(Object entity){
-        Map<String, FieldMapper> fieldsMapper = classMapper.getFieldsMapper();
-        List<Condition> list = new ArrayList<>();
-        for (FieldMapper fieldMapper : fieldsMapper.values()){
+    public EasyJpaMapper(T t){
+        this((Class<T>) t.getClass());
+        for (FieldMapper fieldMapper : classMapper.allMappableFields()){
             try {
                 Method getterMethod = fieldMapper.getGetterMethod();
-                Object value = getterMethod.invoke(entity);
+                Object value = getterMethod.invoke(t);
                 if (value!=null){
                     String columnName = fieldMapper.getColumnName();
                     int columnType = fieldMapper.getColumnType();
-                    Condition condition = Condition.equal(columnName, value);
-                    condition.sqlType = fieldMapper.getColumnType();
-                    list.add(condition);
                     matrix.put(columnName,columnType,value);
                 }
             } catch (IllegalAccessException|InvocationTargetException e) {
             }
-        }
-        if (!list.isEmpty()){
-            conditionMap.put(SqlConst.AND,list);
         }
     }
 
@@ -73,36 +59,54 @@ public abstract class BaseEasyJpa<T> implements MatrixMapper {
         return this.matrix;
     }
 
-    protected void addCondition(SqlConst key, Condition condition){
-        if (condition.isEmpty()){
-            return;
+    @Override
+    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
+        ResultSetMetaData metaData = rs.getMetaData();
+        int columnCount = metaData.getColumnCount();
+        // 从结果集中映射出对象，如果是单值查询的话，考虑是否直接使用原对象)
+        Object instance;
+        try {
+            instance = obj.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new EntityObjectNeedsException(obj+"必须是实体的类，并且至少有一个空的构造方法");
         }
-        if (condition.getFcName()!=null){
-            String fcName = condition.fcName;
-            FieldMapper mapper = classMapper.getMapper(fcName);
-            if (mapper == null){
-                throw new NoSuchFieldOrColumnException(getObj(),fcName);
+        for (int i = 1; i <= columnCount; i++) {
+            String columnName = metaData.getColumnName(i);
+            FieldMapper fieldMapper = classMapper.mapField(columnName);
+            if (fieldMapper ==null){
+                continue;
             }
-            condition.fcName = mapper.getColumnName();
-            condition.sqlType = mapper.getColumnType();
+            try {
+                Field field = fieldMapper.getField();
+                field.setAccessible(true);
+                Object o = getResultSetValue(rs, i, field.getType());
+                field.set(instance,o);
+            } catch (IllegalAccessException e) {
+                continue;
+            }
         }
-        List<Condition> list ;
-        if (conditionMap.containsKey(key)){
-            list = this.conditionMap.get(key);
-        }else{
-            list = new ArrayList<>();
-            conditionMap.put(key,list);
-        }
-        list.add(condition);
+        return instance;
     }
 
+    /**
+     * 向matrix里继续set值
+     * @param fcName
+     * @param value
+     */
+    protected void set(String fcName,Object value){
+        FieldMapper fieldMapper = classMapper.mapField(fcName);
+        this.matrix.put(fieldMapper.getColumnName(),fieldMapper.getColumnType(),value);
+    }
 
-    public List<Condition> getConditions(SqlConst sqlConst){
-        return conditionMap.get(sqlConst);
+    protected void clear(){
+        String[] columns = this.matrix.columns();
+        for (int i = 0; i < columns.length; i++) {
+            this.matrix.remove(i);
+        }
     }
 
     public Matrix idMatrix(){
-        FieldMapper idFieldMapper = classMapper.getIdFieldMapper();
+        FieldMapper idFieldMapper = classMapper.mapId();
         if (idFieldMapper!=null){
             Method getterMethod = idFieldMapper.getGetterMethod();
             try {
@@ -118,13 +122,12 @@ public abstract class BaseEasyJpa<T> implements MatrixMapper {
         return null;
     }
 
-
     public String getTableName(){
-        return classMapper.getTableName();
+        return classMapper.mapTableName();
     }
 
     public String getIdName(){
-        FieldMapper idFieldMapper = classMapper.getIdFieldMapper();
+        FieldMapper idFieldMapper = classMapper.mapId();
         if (idFieldMapper == null){
             throw new NoIdOrPkSpecifiedException(obj.getName()+"has no primary key! STRONGLY RECOMMEND: every table should has primary key,You can use the @Id or @Pk annotation to identify the primary key on your entity class");
         }

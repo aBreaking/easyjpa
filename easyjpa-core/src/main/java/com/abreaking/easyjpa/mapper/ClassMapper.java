@@ -19,7 +19,7 @@ import java.util.*;
  *
  * @author liwei_paas
  */
-public class ClassMapper {
+public final class ClassMapper {
 
     /**
      * 实体类
@@ -48,37 +48,6 @@ public class ClassMapper {
         initFieldMapper(obj);
     }
 
-    public static ClassMapper map(Class obj){
-        if (!MAPPER_CACHE.containsKey(obj)){
-            synchronized (MAPPER_CACHE){
-                if (!MAPPER_CACHE.containsKey(obj)){
-                    ClassMapper classMapper = new ClassMapper(obj);
-                    MAPPER_CACHE.put(obj, classMapper);
-                }
-            }
-        }
-        return MAPPER_CACHE.get(obj);
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public FieldMapper getIdFieldMapper() {
-        return idFieldMapper;
-    }
-
-    public List<FieldMapper> getPksFieldMapper() {
-        return pksFieldMapper;
-    }
-
-    public Map<String,FieldMapper> getFieldsMapper() {
-        return fieldsMapper;
-    }
-    public FieldMapper getMapper(String fieldOrColumnName){
-        return fieldsMapper.get(fieldOrColumnName);
-    }
-
     /**
      * 初始化 实体类的属性->表字段的映射
      * @param obj
@@ -93,8 +62,7 @@ public class ClassMapper {
                 //如果该字段不是 getter setter字段，就不用再继续了
                 continue;
             }
-            FieldMapper fieldMapper = new FieldMapper(field);
-            fieldMapper.setGetterMethod(methodMap.get(fieldName));
+            FieldMapper fieldMapper = new FieldMapper(field,methodMap.get(fieldName));
             fieldsMapper.put(fieldName, fieldMapper);
             fieldsMapper.put(fieldMapper.getColumnName(), fieldMapper);
 
@@ -123,5 +91,57 @@ public class ClassMapper {
         }else{
             this.tableName =  StringUtils.underscoreName(obj.getSimpleName());
         }
+    }
+
+    /**
+     * 映射实体对象
+     * 它是classMapper的入口方法，通过该方法可描述实体类与表 之间的映射关系
+     * @param obj
+     * @return
+     */
+    public static ClassMapper map(Class obj){
+        if (!MAPPER_CACHE.containsKey(obj)){
+            synchronized (MAPPER_CACHE){
+                if (!MAPPER_CACHE.containsKey(obj)){
+                    ClassMapper classMapper = new ClassMapper(obj);
+                    MAPPER_CACHE.put(obj, classMapper);
+                }
+            }
+        }
+        return MAPPER_CACHE.get(obj);
+    }
+
+    /**
+     * 映射 后的表名
+     * @return
+     */
+    public String mapTableName() {
+        return tableName;
+    }
+
+    /**
+     * 映射后的主键
+     * @return
+     */
+    public FieldMapper mapId() {
+        return idFieldMapper;
+    }
+
+    /**
+     * 所有可映射的字段，即能够被转换为 字段->列 的所有映射关系
+     * @return
+     */
+    public Set<FieldMapper> allMappableFields() {
+        return new HashSet<>(fieldsMapper.values());
+    }
+
+    /**
+     * 映射后的字段名及列名的关系
+     * 可使用字段名来获取，也可以使用列名来获取
+     * @param fieldOrColumnName
+     * @return
+     */
+    public FieldMapper mapField(String fieldOrColumnName){
+        return fieldsMapper.get(fieldOrColumnName);
     }
 }

@@ -1,16 +1,14 @@
 package com.abreaking.easyjpa.dao;
 
-import com.abreaking.easyjpa.dao.condition.Entry;
+import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
 import com.abreaking.easyjpa.executor.SqlExecutor;
-import com.abreaking.easyjpa.mapper.ClassRowMapper;
 import com.abreaking.easyjpa.mapper.RowMapper;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
-import com.abreaking.easyjpa.sql.MatrixSqlBuilder;
-import com.abreaking.easyjpa.sql.SelectSqlBuilder;
+import com.abreaking.easyjpa.sql.*;
 
 import java.sql.SQLException;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -26,98 +24,54 @@ public class CurdTemplate<T> {
         this.sqlExecutor = sqlExecutor;
     }
 
-    public List<T> select(AbstractEasyJpa jpa) {
-        return doSelect(jpa,new SelectSqlBuilder());
+    public List<T> select(EasyJpa jpa,RowMapper<T> rowMapper) {
+        SqlBuilder sqlBuilder = new SelectSqlBuilder();
+        Matrix matrix = sqlBuilder.visit(jpa);
+        return doSelect(sqlBuilder,matrix,rowMapper);
     }
 
-    public void update(AbstractEasyJpa t) {
-        doUpdate(t,new MatrixSqlBuilder() {
-            @Override
-            protected void doVisit(AbstractEasyJpa easyJpa) {
-                add("UPDATE ",easyJpa.getTableName());
-                add(" SET ");
-                Collection<Entry> entryList = easyJpa.entry();
-                for (Entry entry : entryList){
-                    add(entry.getColumnName());
-                    add("=?,",entry.getValue());
-                }
-                add(" WHERE ");
-                removeLastSeparator(sqlBuilder,",");
-                Entry id = easyJpa.getIdEntry();
-                add(id.getColumnName());
-                add("=?",id.getValue());
-            }
-        });
+    public List<T> select(EasyJpa jpa) {
+        return select(jpa,jpa);
     }
 
-    public void insert(AbstractEasyJpa t) {
-        doUpdate(t, new MatrixSqlBuilder() {
-            @Override
-            protected void doVisit(AbstractEasyJpa easyJpa) {
-                add("INSERT INTO ",easyJpa.getTableName());
-                add("(");
-                Collection<Entry> entryList = easyJpa.entry();
-                for (Entry  entry : entryList){
-                    add(entry.getColumnName());
-                    add(",");
-                }
-                removeLastSeparator(sqlBuilder,",");
-                add(") VALUES(");
-                for (Entry  entry : entryList){
-                    add("?",entry.getValue());
-                    add(",");
-                }
-                removeLastSeparator(sqlBuilder,",");
-                add(")");
-            }
-        });
+    public void update(EasyJpa jpa) {
+        doExecute(new UpdateSqlBuilder(),jpa);
     }
 
-    public void delete(AbstractEasyJpa t){
-        doUpdate(t, new MatrixSqlBuilder() {
-            @Override
-            protected void doVisit(AbstractEasyJpa easyJpa) {
-                add("DELETE FROM ",easyJpa.getTableName());
-                Entry idEntry = easyJpa.getIdEntry();
-                add(" WHERE ");
-                add(idEntry.getColumnName());
-                add("=?",idEntry.getValue());
-            }
-        });
+    public void update(EasyJpa jpa,Conditions conditions){
+        doExecute(new UpdateSqlBuilder(conditions),jpa);
     }
 
-    public List<T> doSelect(AbstractEasyJpa jpa,SelectSqlBuilder sqlBuilder) {
-        jpa.accept(sqlBuilder);
-        Matrix matrix = sqlBuilder.toMatrix();
-        String toPreparedSql = sqlBuilder.toPrepareSql();
+    public void insert(EasyJpa jpa) {
+        doExecute(new InsertSqlBuilder(),jpa);
+    }
 
-        // 实体的rowMapper
-        RowMapper rowMapper = new ClassRowMapper(jpa.getObj());
+    public void delete(EasyJpa jpa){
+        doExecute(new DeleteSqlBuilder(),jpa);
+    }
+
+    protected List<T> doSelect(SqlBuilder sqlBuilder,Matrix matrix,RowMapper rowMapper) {
+        String prepareSql = sqlBuilder.toString();
+        Object[] values = matrix.values();
+        int[] types = matrix.types();
         try {
-            return sqlExecutor.query(toPreparedSql,matrix.values(),matrix.types(),rowMapper);
+            System.out.println(prepareSql+"\n"+Arrays.toString(values));
+            return sqlExecutor.query(prepareSql,values,types,rowMapper);
         }catch (SQLException e){
-            throw new EasyJpaSqlExecutionException(e);
+            throw new EasyJpaSqlExecutionException(prepareSql,values,e);
         }
     }
 
-    protected void doUpdate(AbstractEasyJpa jpa,MatrixSqlBuilder sqlBuilder) {
-        jpa.accept(sqlBuilder);
-        String sql = sqlBuilder.toPrepareSql();
-        Matrix matrix = sqlBuilder.toMatrix();
-        System.out.println(sql);
-        System.out.println(matrix);
+    protected void doExecute(SqlBuilder sqlBuilder,EasyJpa easyJpa){
+        Matrix matrix = sqlBuilder.visit(easyJpa);
+        String prepareSql = sqlBuilder.toString();
+        Object[] values = matrix.values();
+        int[] types = matrix.types();
         try {
-            sqlExecutor.update(sql,matrix.values(),matrix.types());
+            System.out.println(prepareSql+"\n"+Arrays.toString(values));
+            sqlExecutor.update(prepareSql,values,types);
         } catch (SQLException e) {
-            throw new EasyJpaSqlExecutionException(e);
+            throw new EasyJpaSqlExecutionException(prepareSql,values,e);
         }
     }
-
-    private void removeLastSeparator(StringBuilder sqlBuilder,String separator){
-        if (sqlBuilder.lastIndexOf(separator)!=-1){
-            int index = sqlBuilder.lastIndexOf(separator);
-            sqlBuilder.replace(index,index+1,"");
-        }
-    }
-
 }

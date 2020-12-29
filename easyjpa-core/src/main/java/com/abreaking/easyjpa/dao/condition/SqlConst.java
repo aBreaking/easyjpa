@@ -1,4 +1,4 @@
-package com.abreaking.easyjpa.sql;
+package com.abreaking.easyjpa.dao.condition;
 
 /**
  *

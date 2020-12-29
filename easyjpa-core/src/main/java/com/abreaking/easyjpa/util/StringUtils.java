@@ -7,6 +7,18 @@ package com.abreaking.easyjpa.util;
  */
 public final class StringUtils {
 
+    public static String cutAtLastSeparator(String cs,String separetor){
+        int i = cs.indexOf(separetor);
+        if (i!=-1){
+            cs = cs.substring(0,i);
+        }
+        return cs;
+    }
+    public static StringBuilder cutAtLastSeparator(StringBuilder builder,String s){
+        builder.replace(builder.lastIndexOf(s),builder.length(),"");
+        return builder;
+    }
+
     /**
      * 将驼峰形式name转为带下划线的形式。name全部小写
      * 比如：XxxYyyZzz -> xxx_yyy_zzz

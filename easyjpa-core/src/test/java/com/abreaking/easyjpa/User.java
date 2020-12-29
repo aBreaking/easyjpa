@@ -31,6 +31,11 @@ public class User {
         this.userName = userName;
     }
 
+    public User(String userName,Date birthday) {
+        this.birthday = birthday;
+        this.userName = userName;
+    }
+
     public User() {
     }
 

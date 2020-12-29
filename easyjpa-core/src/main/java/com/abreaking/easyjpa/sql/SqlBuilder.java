@@ -1,7 +1,7 @@
 package com.abreaking.easyjpa.sql;
 
 
-import com.abreaking.easyjpa.dao.BaseEasyJpa;
+import com.abreaking.easyjpa.dao.EasyJpa;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 
 /**
@@ -12,6 +12,5 @@ import com.abreaking.easyjpa.mapper.matrix.Matrix;
  */
 public interface SqlBuilder {
 
-    Matrix visit(BaseEasyJpa easyJpa);
-
+    Matrix visit(EasyJpa easyJpa);
 }

@@ -1,13 +1,12 @@
 package com.abreaking.easyjpa.sql;
 
-import com.abreaking.easyjpa.dao.BaseEasyJpa;
-import com.abreaking.easyjpa.dao.Condition;
+import com.abreaking.easyjpa.dao.EasyJpa;
+import com.abreaking.easyjpa.dao.condition.Condition;
+import com.abreaking.easyjpa.dao.condition.Conditions;
+import com.abreaking.easyjpa.dao.condition.SqlConst;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
-import com.abreaking.easyjpa.util.SqlUtil;
-
-import java.util.Collection;
-import java.util.List;
+import com.abreaking.easyjpa.util.StringUtils;
 
 
 /**
@@ -17,39 +16,40 @@ import java.util.List;
  */
 public class UpdateSqlBuilder extends AbstractSqlBuilder{
 
-    Matrix conditionMatrix ;
+    /**
+     * update 的condition 条件
+     */
+    Conditions conditions ;
 
-    public UpdateSqlBuilder(Matrix conditionMatrix) {
-        this.conditionMatrix = conditionMatrix;
+    public UpdateSqlBuilder(Conditions conditionList) {
+        this.conditions = conditionList;
     }
 
     public UpdateSqlBuilder() {
     }
 
     @Override
-    protected void doVisit(BaseEasyJpa easyJpa,ColumnMatrix columnMatrix) {
+    protected void doVisit(EasyJpa easyJpa,ColumnMatrix columnMatrix) {
         sqlBuilder.append("UPDATE ");
         sqlBuilder.append(easyJpa.getTableName());
         sqlBuilder.append(" SET ");
         Matrix matrix = easyJpa.matrix();
-        String[] columns = conditionMatrix.columns();
+        String[] columns = matrix.columns();
         for (String column : columns){
             sqlBuilder.append(column);
             sqlBuilder.append("= ?,");
             columnMatrix.putAll(matrix);
         }
-        cutLast(sqlBuilder,",");
-        if (conditionMatrix==null){
+        StringUtils.cutAtLastSeparator(sqlBuilder,",");
+        sqlBuilder.append(" ");
+        if (conditions==null){
             // 如果没有指定update的where条件，那么默认使用id作为条件
-            conditionMatrix = easyJpa.idMatrix();
+            Matrix idMatrix = easyJpa.idMatrix();
+            conditions = sqlConst -> sqlConst.equals(SqlConst.AND)?Condition.matrixToCondition(idMatrix):null;
         }
-        if (conditionMatrix!=null){
-            sqlBuilder.append("WHERE ");
-            for (int i = 0; i < columns.length; i++) {
-                sqlBuilder.append(columns[i]);
-                sqlBuilder.append("=? ");
-            }
-            columnMatrix.putAll(conditionMatrix);
+        if (conditions!=null){
+            ConditionVisitor conditionVisitor = new ConditionVisitor(sqlBuilder, columnMatrix);
+            conditionVisitor.visitWhere(conditions);
         }
     }
 
