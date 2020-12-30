@@ -15,7 +15,9 @@ public final class StringUtils {
         return cs;
     }
     public static StringBuilder cutAtLastSeparator(StringBuilder builder,String s){
-        builder.replace(builder.lastIndexOf(s),builder.length(),"");
+        if (builder.lastIndexOf(s)!=-1){
+            builder.replace(builder.lastIndexOf(s),builder.length(),"");
+        }
         return builder;
     }
 

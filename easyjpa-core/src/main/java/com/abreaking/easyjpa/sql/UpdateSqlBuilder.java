@@ -4,6 +4,8 @@ import com.abreaking.easyjpa.dao.EasyJpa;
 import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.SqlConst;
+import com.abreaking.easyjpa.exception.EasyJpaException;
+import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.util.StringUtils;
@@ -33,24 +35,43 @@ public class UpdateSqlBuilder extends AbstractSqlBuilder{
         sqlBuilder.append("UPDATE ");
         sqlBuilder.append(easyJpa.getTableName());
         sqlBuilder.append(" SET ");
+
         Matrix matrix = easyJpa.matrix();
         String[] columns = matrix.columns();
-        for (String column : columns){
-            sqlBuilder.append(column);
-            sqlBuilder.append("= ?,");
+        if (conditions==null){
+            //如果没有指定条件，那么默认按照id 来进行update
+            String idName = easyJpa.getIdName();
+            if (idName == null){
+                throw new NoIdOrPkSpecifiedException(easyJpa.getObj());
+            }
+            Matrix idMatrix = easyJpa.idMatrix();
+            if (idMatrix==null){
+                throw new EasyJpaException("update for "+easyJpa.getObj().getSimpleName()+", no conditions or primary key specified");
+            }
+            conditions = sqlConst -> sqlConst.equals(SqlConst.AND)?Condition.matrixToCondition(idMatrix):null;
+
+            int[] types = matrix.types();
+            Object[] values = matrix.values();
+            for (int i = 0; i < columns.length; i++) {
+                String column = columns[i];
+                if (column.equals(idName)){
+                    continue;
+                }
+                sqlBuilder.append(column);
+                sqlBuilder.append("= ?,");
+                columnMatrix.put(column,types[i],values[i]);
+            }
+        }else{
+            for (String column : columns){
+                sqlBuilder.append(column);
+                sqlBuilder.append("= ?,");
+            }
             columnMatrix.putAll(matrix);
         }
         StringUtils.cutAtLastSeparator(sqlBuilder,",");
         sqlBuilder.append(" ");
-        if (conditions==null){
-            // 如果没有指定update的where条件，那么默认使用id作为条件
-            Matrix idMatrix = easyJpa.idMatrix();
-            conditions = sqlConst -> sqlConst.equals(SqlConst.AND)?Condition.matrixToCondition(idMatrix):null;
-        }
-        if (conditions!=null){
-            ConditionVisitor conditionVisitor = new ConditionVisitor(sqlBuilder, columnMatrix);
-            conditionVisitor.visitWhere(conditions);
-        }
+        ConditionVisitor conditionVisitor = new ConditionVisitor(sqlBuilder, columnMatrix);
+        conditionVisitor.visitWhere(conditions);
     }
 
 

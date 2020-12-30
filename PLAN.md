@@ -25,3 +25,7 @@
 
 2020年12月9日
 还是考虑先 改为组装sql片段的方式，参考com.abreaking.easyjpa.com.abreaking.easyjpa.executor.JdbcSqlExecutorTest.append 的实现方法，
+
+2020年12月30日
+已完成根据prepareSql 以及 placeholderSql来查询
+但是placeholderSql还有一个问题：往往sql语句应该根据params里是否有值来决定；应该考虑如何实现动态sql.

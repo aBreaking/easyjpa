@@ -26,4 +26,16 @@ public class SqlUtil {
                 Date.class.isAssignableFrom(fieldType)?Types.TIMESTAMP:
                 Types.VARCHAR;
     }
+
+    public static Class getJavaType(int columnType){
+        switch (columnType){
+            case Types.VARCHAR : return String.class;
+            case Types.INTEGER : return Integer.class;
+            case Types.NUMERIC : return Long.class;
+            case Types.FLOAT : return Float.class;
+            case Types.DOUBLE : return Double.class;
+            case Types.TIMESTAMP : return Date.class;
+            default: return String.class;
+        }
+    }
 }

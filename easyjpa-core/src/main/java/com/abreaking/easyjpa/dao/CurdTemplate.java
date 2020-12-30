@@ -25,9 +25,7 @@ public class CurdTemplate<T> {
     }
 
     public List<T> select(EasyJpa jpa,RowMapper<T> rowMapper) {
-        SqlBuilder sqlBuilder = new SelectSqlBuilder();
-        Matrix matrix = sqlBuilder.visit(jpa);
-        return doSelect(sqlBuilder,matrix,rowMapper);
+        return doSelect(new SelectSqlBuilder(),jpa,rowMapper);
     }
 
     public List<T> select(EasyJpa jpa) {
@@ -50,7 +48,8 @@ public class CurdTemplate<T> {
         doExecute(new DeleteSqlBuilder(),jpa);
     }
 
-    protected List<T> doSelect(SqlBuilder sqlBuilder,Matrix matrix,RowMapper rowMapper) {
+    protected List<T> doSelect(SqlBuilder sqlBuilder,EasyJpa easyJpa,RowMapper rowMapper) {
+        Matrix matrix = sqlBuilder.visit(easyJpa);
         String prepareSql = sqlBuilder.toString();
         Object[] values = matrix.values();
         int[] types = matrix.types();

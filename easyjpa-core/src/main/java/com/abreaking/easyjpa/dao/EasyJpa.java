@@ -13,7 +13,7 @@ import java.util.Map;
 
 /**
  * fixme 说些什么
- *
+ * 我们用easyJpa来完成单个对象（表） 增删改查的条件组装操作。
  * @author liwei_paas
  * @date 2020/11/13
  */

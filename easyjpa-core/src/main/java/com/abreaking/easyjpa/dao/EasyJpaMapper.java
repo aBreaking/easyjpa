@@ -1,7 +1,6 @@
 package com.abreaking.easyjpa.dao;
 
 import com.abreaking.easyjpa.exception.EntityObjectNeedsException;
-import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
 import com.abreaking.easyjpa.mapper.ClassMapper;
 import com.abreaking.easyjpa.mapper.FieldMapper;
 import com.abreaking.easyjpa.mapper.MatrixMapper;
@@ -28,18 +27,20 @@ public abstract class EasyJpaMapper<T> implements MatrixMapper,RowMapper {
     protected Class obj;
 
     // 实体的映射信息
-    protected final ClassMapper classMapper;
+    protected ClassMapper classMapper;
 
-    protected final ColumnMatrix matrix;
+    protected ColumnMatrix matrix;
 
     public EasyJpaMapper(Class<T> obj){
         this.obj = obj;
         this.classMapper = ClassMapper.map(obj);
-        this.matrix = MatrixFactory.createColumnMatrix();
+        this.matrix = MatrixFactory.createColumnMatrix(0);
     }
 
     public EasyJpaMapper(T t){
-        this((Class<T>) t.getClass());
+        this.obj = t.getClass();
+        this.classMapper = ClassMapper.map(this.obj);
+        this.matrix = MatrixFactory.createColumnMatrix();
         for (FieldMapper fieldMapper : classMapper.allMappableFields()){
             try {
                 Method getterMethod = fieldMapper.getGetterMethod();
@@ -106,17 +107,13 @@ public abstract class EasyJpaMapper<T> implements MatrixMapper,RowMapper {
     }
 
     public Matrix idMatrix(){
-        FieldMapper idFieldMapper = classMapper.mapId();
-        if (idFieldMapper!=null){
-            Method getterMethod = idFieldMapper.getGetterMethod();
-            try {
-                Object value = getterMethod.invoke(this);
-                if (value!=null){
-                    ColumnMatrix columnMatrix = MatrixFactory.createColumnMatrix(1);
-                    columnMatrix.put(idFieldMapper.getColumnName(),idFieldMapper.getColumnType(),value);
-                    return columnMatrix;
-                }
-            } catch (IllegalAccessException | InvocationTargetException e) {
+        ColumnMatrix columnMatrix = MatrixFactory.createColumnMatrix(1);
+        String idName = this.getIdName();
+        if (idName!=null){
+            int i = matrix.indexOf(idName);
+            if (i!=-1){
+                columnMatrix.put(matrix.getColumn(i),matrix.getType(i),matrix.getValue(i));
+                return columnMatrix;
             }
         }
         return null;
@@ -128,10 +125,10 @@ public abstract class EasyJpaMapper<T> implements MatrixMapper,RowMapper {
 
     public String getIdName(){
         FieldMapper idFieldMapper = classMapper.mapId();
-        if (idFieldMapper == null){
-            throw new NoIdOrPkSpecifiedException(obj.getName()+"has no primary key! STRONGLY RECOMMEND: every table should has primary key,You can use the @Id or @Pk annotation to identify the primary key on your entity class");
+        if (idFieldMapper != null){
+            return idFieldMapper.getColumnName();
         }
-        return idFieldMapper.getColumnName();
+        return null;
     }
 
     public Class getObj(){

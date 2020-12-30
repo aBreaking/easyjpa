@@ -18,6 +18,19 @@ public class SelectSqlBuilder extends AbstractSqlBuilder{
     protected void doVisit(EasyJpa easyJpa,ColumnMatrix matrix) {
         ConditionVisitor conditionVisitor = new ConditionVisitor(sqlBuilder, matrix);
 
+        this.visitSelect(conditionVisitor,easyJpa);
+
+        sqlBuilder.append("FROM ").append(easyJpa.getTableName()).append(" ");
+
+        conditionVisitor.visitWhere(easyJpa);
+
+        conditionVisitor.visitOrderBy(easyJpa);
+
+        conditionVisitor.visitLimit(easyJpa);
+
+    }
+
+    public void visitSelect(ConditionVisitor conditionVisitor,EasyJpa easyJpa){
         sqlBuilder.append("SELECT ");
         boolean select = conditionVisitor.visit(easyJpa, SqlConst.SELECT, selects -> {
             Condition condition = selects.get(0);
@@ -31,16 +44,7 @@ public class SelectSqlBuilder extends AbstractSqlBuilder{
         if (!select){
             sqlBuilder.append("* ");
         }
-
-        sqlBuilder.append("FROM ");
-        sqlBuilder.append(easyJpa.getTableName()).append(" ");
-
-        conditionVisitor.visitWhere(easyJpa);
-
-        conditionVisitor.visitOrderBy(easyJpa);
-
-        conditionVisitor.visitLimit(easyJpa);
-
     }
+
 
 }
