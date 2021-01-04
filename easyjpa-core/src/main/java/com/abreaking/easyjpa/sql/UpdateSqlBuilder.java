@@ -19,7 +19,7 @@ import com.abreaking.easyjpa.util.StringUtils;
 public class UpdateSqlBuilder extends AbstractSqlBuilder{
 
     /**
-     * update 的condition 条件
+     * execute 的condition 条件
      */
     Conditions conditions ;
 
@@ -46,7 +46,7 @@ public class UpdateSqlBuilder extends AbstractSqlBuilder{
             }
             Matrix idMatrix = easyJpa.idMatrix();
             if (idMatrix==null){
-                throw new EasyJpaException("update for "+easyJpa.getObj().getSimpleName()+", no conditions or primary key specified");
+                throw new EasyJpaException("execute for "+easyJpa.getObj().getSimpleName()+", no conditions or primary key specified");
             }
             conditions = sqlConst -> sqlConst.equals(SqlConst.AND)?Condition.matrixToCondition(idMatrix):null;
 
@@ -70,8 +70,7 @@ public class UpdateSqlBuilder extends AbstractSqlBuilder{
         }
         StringUtils.cutAtLastSeparator(sqlBuilder,",");
         sqlBuilder.append(" ");
-        ConditionVisitor conditionVisitor = new ConditionVisitor(sqlBuilder, columnMatrix);
-        conditionVisitor.visitWhere(conditions);
+        visitWhere(conditions,columnMatrix);
     }
 
 

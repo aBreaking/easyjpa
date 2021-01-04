@@ -5,7 +5,7 @@ import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 
 
 /**
- * insert
+ * delete 删除语句
  * @author liwei_paas
  * @date 2020/12/15
  */
@@ -15,9 +15,7 @@ public class DeleteSqlBuilder extends AbstractSqlBuilder{
     protected void doVisit(EasyJpa easyJpa,ColumnMatrix columnMatrix) {
         sqlBuilder.append("DELETE FROM ");
         sqlBuilder.append(easyJpa.getTableName()).append(" ");
-
-        ConditionVisitor conditionVisitor = new ConditionVisitor(sqlBuilder,columnMatrix);
-        conditionVisitor.visitWhere(easyJpa);
+        visitWhere(easyJpa,columnMatrix);
     }
 
 }

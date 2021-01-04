@@ -10,43 +10,65 @@ import java.util.List;
 /**
  * 使用jdbc来执行sql语句，默认的执行方式
  * @author liwei_paas
- * @date 2020/7/6
+ * @date 2020/11/3
  */
 public class JdbcSqlExecutor implements SqlExecutor{
 
     private Connection connection;
-
 
     public JdbcSqlExecutor(Connection connection){
         this.connection = connection;
     }
 
     @Override
-    public <T> List<T> query(String preparedSql, Object[] values, int[] types, RowMapper<T> rowMapper) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(preparedSql);
-        for (int i = 0; i < values.length; i++) {
-            setValue(ps,i+1,types[i],values[i]);
-        }
-        ResultSet rs = ps.executeQuery();
-        List<T> list = new ArrayList<>();
-        int i =0;
-        while (rs.next()){
-            Object o = rowMapper.mapRow(rs, i);
-            i++;
-            list.add((T) o);
-        }
-        return list;
+    public Connection getConnection() {
+        return this.connection;
     }
 
     @Override
-    public int update(String preparedSql, Object[] values, int[] types) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(preparedSql);
-        for (int i = 0; i < values.length; i++) {
-            setValue(ps,i+1,types[i],values[i]);
+    public <T> List<T> query(String preparedSql, Object[] values, int[] types, RowMapper<T> rowMapper) throws SQLException {
+        PreparedStatement ps  = null;
+        ResultSet rs = null;
+        try{
+            ps = connection.prepareStatement(preparedSql);
+            for (int i = 0; i < values.length; i++) {
+                setValue(ps,i+1,types[i],values[i]);
+            }
+            rs = ps.executeQuery();
+            List<T> list = new ArrayList<>();
+            int i =0;
+            while (rs.next()){
+                Object o = rowMapper.mapRow(rs, i);
+                i++;
+                list.add((T) o);
+            }
+            return list;
+        }finally {
+            if (rs!=null){
+                rs.close();
+            }
+            if (ps!=null){
+                ps.close();
+            }
         }
-        return ps.executeUpdate();
     }
 
+    @Override
+    public int execute(String preparedSql, Object[] values, int[] types) throws SQLException {
+        PreparedStatement ps = null;
+        try{
+            ps = connection.prepareStatement(preparedSql);
+            for (int i = 0; i < values.length; i++) {
+                setValue(ps,i+1,types[i],values[i]);
+            }
+            return ps.executeUpdate();
+        }finally {
+            if (ps!=null){
+                ps.close();
+            }
+        }
+
+    }
 
     private static void setValue(PreparedStatement ps, int paramIndex, int sqlType,Object inValue) throws SQLException {
 

@@ -4,7 +4,6 @@ import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.CurdTemplate;
 import com.abreaking.easyjpa.dao.EasyJpa;
 import com.abreaking.easyjpa.dao.EasyJpaDao;
-import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.Page;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
 import com.abreaking.easyjpa.executor.SqlExecutor;
@@ -14,6 +13,7 @@ import com.abreaking.easyjpa.sql.PlaceHolderSqlBuilder;
 import com.abreaking.easyjpa.sql.PrepareSqlBuilder;
 import com.abreaking.easyjpa.sql.SelectSqlBuilder;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +25,12 @@ import java.util.Map;
  */
 public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
 
-
     public EasyJpaDaoImpl(SqlExecutor sqlExecutor) {
         super(sqlExecutor);
+    }
+
+    public EasyJpaDaoImpl(Connection connection) {
+        super(connection);
     }
 
     @Override

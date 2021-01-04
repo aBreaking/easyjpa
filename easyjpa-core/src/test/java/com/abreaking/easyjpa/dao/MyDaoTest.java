@@ -5,8 +5,10 @@ import com.abreaking.easyjpa.executor.JdbcSqlExecutor;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.mysql.jdbc.Driver;
+import org.junit.Test;
 
 import javax.sql.DataSource;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -49,6 +51,13 @@ public class MyDaoTest {
     public static  EasyJpaDao dao = new EasyJpaDaoImpl(sqlExecutor);
     public static CurdTemplate curdTemplate = new CurdTemplate(sqlExecutor);
 
+    @Test
+    public void test01() throws SQLException {
+        DataSource dataSource = localhostDatasource();
+        DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
+        String url = metaData.getURL();
+        System.out.println(url);
+    }
 
 
     private void prettyPrint(List list){
@@ -59,8 +68,5 @@ public class MyDaoTest {
             System.out.println(o);
         }
     }
-
-
-
 
 }

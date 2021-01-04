@@ -1,12 +1,15 @@
 package com.abreaking.easyjpa.dao;
 
+import com.abreaking.easyjpa.config.EasyJpaConfiguration;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
+import com.abreaking.easyjpa.executor.JdbcSqlExecutor;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.RowMapper;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.sql.*;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +24,12 @@ public class CurdTemplate<T> {
     protected SqlExecutor sqlExecutor;
 
     public CurdTemplate(SqlExecutor sqlExecutor) {
+        EasyJpaConfiguration.setDialectWithConnection(sqlExecutor.getConnection());
         this.sqlExecutor = sqlExecutor;
+    }
+
+    public CurdTemplate(Connection connection){
+        this(new JdbcSqlExecutor(connection));
     }
 
     public List<T> select(EasyJpa jpa,RowMapper<T> rowMapper) {
@@ -68,7 +76,7 @@ public class CurdTemplate<T> {
         int[] types = matrix.types();
         try {
             System.out.println(prepareSql+"\n"+Arrays.toString(values));
-            sqlExecutor.update(prepareSql,values,types);
+            sqlExecutor.execute(prepareSql,values,types);
         } catch (SQLException e) {
             throw new EasyJpaSqlExecutionException(prepareSql,values,e);
         }

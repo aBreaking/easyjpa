@@ -1,5 +1,6 @@
 package com.abreaking.easyjpa;
 
+import javax.persistence.Id;
 import java.util.Date;
 
 /**
@@ -8,6 +9,7 @@ import java.util.Date;
  * @date 2020/11/13
  */
 public class User {
+    @Id
     private Integer userId;
     private Date birthday;
     private String userName;

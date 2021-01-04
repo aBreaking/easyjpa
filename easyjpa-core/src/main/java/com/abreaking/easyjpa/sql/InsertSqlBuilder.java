@@ -13,7 +13,6 @@ import com.abreaking.easyjpa.util.StringUtils;
  */
 public class InsertSqlBuilder extends AbstractSqlBuilder{
 
-
     @Override
     protected void doVisit(EasyJpa easyJpa,ColumnMatrix columnMatrix) {
         sqlBuilder.append("INSERT INTO ");

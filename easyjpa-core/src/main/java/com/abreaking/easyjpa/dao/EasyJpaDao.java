@@ -1,6 +1,5 @@
 package com.abreaking.easyjpa.dao;
 
-import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.Page;
 
 import java.util.List;
