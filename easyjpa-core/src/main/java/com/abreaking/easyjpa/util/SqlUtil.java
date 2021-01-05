@@ -31,7 +31,10 @@ public class SqlUtil {
         switch (columnType){
             case Types.VARCHAR : return String.class;
             case Types.INTEGER : return Integer.class;
+            case Types.SMALLINT : return Integer.class;
+            case Types.TINYINT : return Integer.class;
             case Types.NUMERIC : return Long.class;
+            case Types.BIGINT : return Long.class;
             case Types.FLOAT : return Float.class;
             case Types.DOUBLE : return Double.class;
             case Types.TIMESTAMP : return Date.class;

@@ -1,11 +1,14 @@
 package com.abreaking.easyjpa.config;
 
 
+import com.abreaking.easyjpa.util.StringUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -22,13 +25,13 @@ public class EasyJpaConfiguration {
     public static final String PROPERTIES_PREFIX = "easyjpa";
 
     static {
-        initConfigurationWithProperties();
+        initConfigurationByProperties();
     }
 
     /**
      * 根据配置文件初始化配置
      */
-    public static void initConfigurationWithProperties(){
+    public static void initConfigurationByProperties(){
         try {
             ClassLoader classLoader = EasyJpaConfiguration.class.getClassLoader();
             URL url = classLoader.getResource(DEFAULT_PROPERTIES_FILE_NAME);
@@ -41,14 +44,26 @@ public class EasyJpaConfiguration {
             }
             Properties properties = new Properties();
             properties.load(new FileInputStream(file));
-            for (Configuration configuration : Configuration.values()){
-                String key = PROPERTIES_PREFIX+"."+configuration.name();
+            initConfiguration(properties);
+        } catch (IOException e) {
+        }
+    }
+
+    public static void initConfiguration(Map properties){
+        for (Configuration configuration : Configuration.values()){
+            String key = PROPERTIES_PREFIX+"."+configuration.name();
+            if (properties.containsKey(key)){
+                configuration.value = String.valueOf(properties.get(key));
+                configuration.hasInitialization = true;
+            }else{
+                // 也支持 aaa_bbb_ccc这样的配置 也可以用 aaaBbbCcc来进行配置
+                String s = StringUtils.deunderscoreName(configuration.name());
+                key = PROPERTIES_PREFIX+ "." + s;
                 if (properties.containsKey(key)){
-                    configuration.value = properties.getProperty(key);
+                    configuration.value = String.valueOf(properties.get(key));
                     configuration.hasInitialization = true;
                 }
             }
-        } catch (IOException e) {
         }
     }
 

@@ -59,6 +59,8 @@ public interface EasyJpaDao {
      */
     <T> void update(T entity) ;
 
+    <T> void update(EasyJpa<T> entity);
+
     <T> void update(T entity,EasyJpa conditions);
 
     /**

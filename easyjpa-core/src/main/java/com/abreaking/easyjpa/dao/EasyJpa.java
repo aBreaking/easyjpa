@@ -6,13 +6,9 @@ import com.abreaking.easyjpa.exception.NoSuchFieldOrColumnException;
 import com.abreaking.easyjpa.mapper.FieldMapper;
 import com.abreaking.easyjpa.dao.condition.SqlConst;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * fixme 说些什么
  * 我们用easyJpa来完成单个对象（表） 增删改查的条件组装操作。
  * @author liwei_paas
  * @date 2020/11/13
@@ -34,14 +30,9 @@ public final class EasyJpa<T> extends EasyJpaMapper implements Conditions {
         String[] columnNames = new String[fcNames.length];
         for (int i = 0; i < fcNames.length; i++) {
             FieldMapper mapper = classMapper.mapField(fcNames[i]);
-            if (mapper == null){
-                columnNames[i] = fcNames[i];
-                //throw new NoSuchFieldOrColumnException(getObj(),fcNames[i]);
-            }else{
-                columnNames[i] = mapper.getColumnName();
-            }
+            columnNames[i] = mapper == null?fcNames[i]:mapper.getColumnName();
         }
-        addCondition(SqlConst.SELECT,Condition.prepare("SELECT",columnNames));
+        addCondition(SqlConst.SELECT,Condition.prepare("SELECT",columnNames),true);
     }
 
     public void and(Condition condition){
@@ -65,8 +56,8 @@ public final class EasyJpa<T> extends EasyJpaMapper implements Conditions {
         addCondition(SqlConst.ORDER_BY,Condition.to(fcName," ORDER BY ",asc?"ASC":"DESC"));
     }
 
-    public void limit(int start,int page){
-        addCondition(SqlConst.LIMIT,Condition.prepare("limit ?,?",start,page));
+    public void limit(int start,int offset){
+        addCondition(SqlConst.LIMIT,Condition.prepare("limit ?,?",start,offset),true);
     }
 
     private void fcNameWithOperator(SqlConst sqlConst,String fcNameWithOperator,Object...values){
@@ -89,6 +80,16 @@ public final class EasyJpa<T> extends EasyJpaMapper implements Conditions {
     }
 
     private void addCondition(SqlConst key, Condition condition){
+        addCondition(key,condition,false);
+    }
+
+    /**
+     *
+     * @param key
+     * @param condition
+     * @param isSingle 关键字是否只会用到一次
+     */
+    private void addCondition(SqlConst key, Condition condition, Boolean isSingle){
         if (condition.isEmpty()){
             return;
         }
@@ -101,10 +102,17 @@ public final class EasyJpa<T> extends EasyJpaMapper implements Conditions {
             Condition.formatCondition(condition,mapper.getColumnName(),mapper.getColumnType());
         }
         List<Condition> list ;
+
+        if(isSingle){
+            conditionMap.put(key,Collections.singletonList(condition));
+            return;
+        }
+
         if (conditionMap.containsKey(key)){
             list = this.conditionMap.get(key);
+            list.add(condition);
         }else{
-            list = new ArrayList<>();
+            list = new ArrayList();
             conditionMap.put(key,list);
         }
         list.add(condition);
@@ -122,8 +130,27 @@ public final class EasyJpa<T> extends EasyJpaMapper implements Conditions {
         this.conditionMap.clear();
     }
 
+    public void remove(SqlConst sqlConst) {
+        conditionMap.remove(sqlConst);
+    }
+
     @Override
     public List<Condition> getConditions(SqlConst sqlConst){
         return conditionMap.get(sqlConst);
     }
+
+    @Override
+    public int hashCode() {
+        int result = obj.hashCode();
+        for (SqlConst sqlConst : conditionMap.keySet()){
+            List<Condition> list = conditionMap.get(sqlConst);
+            if (!list.isEmpty()){
+                for (Condition element : list){
+                    result = 31 * result + (element == null ? 0 : element.hashCode());
+                }
+            }
+        }
+        return result;
+    }
+
 }

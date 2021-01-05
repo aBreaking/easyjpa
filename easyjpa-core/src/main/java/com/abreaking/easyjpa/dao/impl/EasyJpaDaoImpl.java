@@ -5,16 +5,13 @@ import com.abreaking.easyjpa.dao.CurdTemplate;
 import com.abreaking.easyjpa.dao.EasyJpa;
 import com.abreaking.easyjpa.dao.EasyJpaDao;
 import com.abreaking.easyjpa.dao.condition.Page;
-import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
+import com.abreaking.easyjpa.dao.condition.SqlConst;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.JavaMapRowMapper;
-import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.sql.PlaceHolderSqlBuilder;
 import com.abreaking.easyjpa.sql.PrepareSqlBuilder;
-import com.abreaking.easyjpa.sql.SelectSqlBuilder;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -36,44 +33,59 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
     @Override
     public List query(Object condition) {
         EasyJpa easyJpa = new EasyJpa(condition);
-        return select(easyJpa);
+        return select(easyJpa,easyJpa);
     }
 
     @Override
     public List query(EasyJpa condition) {
-        return select(condition);
+        return select(condition,condition);
     }
 
+    /**
+     * 分页
+     * @param easyJpa
+     * @param page
+     * @return
+     */
     @Override
-    public Page queryByPage(EasyJpa condition, Page page) {
-        try {
-            condition.limit(page.getPageNum(),page.getPageSize());
-            SelectSqlBuilder selectSqlBuilder = new SelectSqlBuilder();
-            Matrix matrix = selectSqlBuilder.visit(condition);
-            List result = select(condition);
-            page.setResult(result);
-            String conditionPrepareSql = selectSqlBuilder.toString();
-            List<Object[]> query =  sqlExecutor.query("select count(*) from ("+conditionPrepareSql+") _ct",matrix.values(),matrix.types(),new JavaMapRowMapper());
-            Object[] totalArray = query.get(0);
-            Long total = (Long) totalArray[0];
-            page.setTotal(total);
-            return page;
-        } catch (SQLException e) {
-            throw new EasyJpaSqlExecutionException(e);
+    public Page queryByPage(EasyJpa easyJpa, Page page) {
+        easyJpa.limit(page.getStartRow(),page.getPageSize());
+        List result = query(easyJpa);
+        page.setResult(result);
+
+        // 如果已经设置了select，需要保存下之前的select
+        List<Condition> conditions = easyJpa.getConditions(SqlConst.SELECT);
+        String[] selects = null; //是否已经包含了select
+        if (conditions!=null && !conditions.isEmpty()){
+            Condition condition = conditions.get(0);
+            selects = (String[]) condition.getValues();
         }
+        // 该条件下的总数
+        easyJpa.remove(SqlConst.LIMIT);
+        easyJpa.select("COUNT(*) counter");
+        List<Map> list = select(easyJpa, new JavaMapRowMapper());
+        Map map = list.get(0);
+        Long total = (Long) map.get("counter");
+        page.setTotal(total);
+
+        if (selects!=null && selects.length!=0){
+            easyJpa.select(selects);
+        }
+
+        return page;
     }
 
     @Override
     public Object get(Class obj, Object idValue) {
         EasyJpa easyJpa = new EasyJpa(obj);
         easyJpa.and(Condition.equal(easyJpa.getIdName(),idValue));
-        List list = super.select(easyJpa);
+        List list = query(easyJpa);
         return list.get(0);
     }
 
     @Override
     public void update(Object entity) {
-        super.update(new EasyJpa(entity));
+        super.update(new EasyJpa(entity),null);
     }
 
     @Override
@@ -120,7 +132,10 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
         return doSelect(new PlaceHolderSqlBuilder(placeholderSql, entity),new EasyJpa(entity.getClass()),new JavaMapRowMapper());
     }
 
-
+    @Override
+    public <T> void update(EasyJpa<T> entity) {
+        super.update(entity,null);
+    }
 
     @Override
     public <T> void update(T entity, EasyJpa condition) {

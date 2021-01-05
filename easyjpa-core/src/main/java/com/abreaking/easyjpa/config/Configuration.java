@@ -8,6 +8,8 @@ package com.abreaking.easyjpa.config;
 public enum Configuration {
 
     dialect("mysql"), // 方言默认为mysql，目前暂时支持Mysql与oracle
+    cache("lru"),
+    cache_lru_max_size("128"),
     ;
 
     String value; // 默认值
@@ -16,7 +18,7 @@ public enum Configuration {
         this(value,false);
     }
     Configuration(String value,boolean hasInitialization) {
-        this.value = value;
+        this.value = value.toLowerCase();
         this.hasInitialization = hasInitialization;
     }
 

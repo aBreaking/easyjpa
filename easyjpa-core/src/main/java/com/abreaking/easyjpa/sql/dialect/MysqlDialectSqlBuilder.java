@@ -18,11 +18,10 @@ public class MysqlDialectSqlBuilder extends AbstractDialectSqlBuilder{
     public void visitPage(ColumnMatrix columnMatrix, int pageStartIndex, int pageSize) {
         if (pageStartIndex == 0){
             sqlBuilder.append("LIMIT ?");
-            columnMatrix.put("pageSize",SqlUtil.getSqlType(Integer.class),pageSize);
         }else{
             sqlBuilder.append("LIMIT ?,?");
             columnMatrix.put("pageStartIndex",SqlUtil.getSqlType(Integer.class),pageStartIndex);
-            columnMatrix.put("pageSize",SqlUtil.getSqlType(Integer.class),pageSize);
         }
+        columnMatrix.put("pageSize",SqlUtil.getSqlType(Integer.class),pageSize);
     }
 }

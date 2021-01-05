@@ -3,6 +3,7 @@ package com.abreaking.easyjpa.dao.condition;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -137,7 +138,6 @@ public class Condition {
 
     @Override
     public int hashCode() {
-
-        return Objects.hash(fcName, prepare);
+        return (31*Objects.hash(fcName, prepare,sqlType))+Arrays.hashCode(values);
     }
 }

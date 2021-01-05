@@ -29,3 +29,8 @@
 2020年12月30日
 已完成根据prepareSql 以及 placeholderSql来查询
 但是placeholderSql还有一个问题：往往sql语句应该根据params里是否有值来决定；应该考虑如何实现动态sql.
+mysql\oracle语法不一致的问题待处理  -> 考虑全局配置方案的实现
+一级缓存应该还有要有
+
+2021年1月5日
+考虑统一封装commonDao 里那些根据prepareSql placeholderSql来查询的sql
