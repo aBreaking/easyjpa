@@ -8,15 +8,15 @@ EasyJpa是一个轻量的、全自动对象关系映射（ORM）的Java框架。
 
 1. 开箱即用
 
-参见下面的**快速使用**，仅仅三步，你就可以将easyjpa用到你的工程；各种curd操作更easy了。
+参见下面的**快速使用**，仅仅三步，你就可以将EasyJpa用到你的工程；各种curd操作更easy了。
 
 2. 可以零配置
 
-easyjpa几乎可以做到零配置，可以不需要额外的配置，就可以直接使用了。（数据源的配置应该在你的原有工程中，故不算easyjpa的配置，见下面的**快速使用**）。
+EasyJpa几乎可以做到零配置，可以不需要额外的配置，就可以直接使用了。（数据源的配置应该在你的原有工程中，故不算EasyJpa的配置，见下面的**快速使用**）。
 
 3. 耦合度低
 
-easyjpa不会对你的代码造成任何污染，实体类注解引入的也是javax规范的注解。
+EasyJpa不会对你的代码造成任何污染，实体类注解引入的也是javax规范的注解。
 
 4. 返回结果自动类型转换
 
@@ -53,7 +53,7 @@ public class User {
 
 2. 使用包装类型
 
-目前easyjpa仅支持Java的基本类型，并且应该是包装类型，包括：
+目前EasyJpa仅支持Java的基本类型，并且应该是包装类型，包括：
 ```
 String、Integer、Long、Float、Double、Date
 ```
@@ -68,13 +68,13 @@ String、Integer、Long、Float、Double、Date
 # 快速上手
 先进行如下的准备工作：
 
-1. 将easyjpa引入了你的工程
+1. 将EasyJpa引入了你的工程
 
 目前可直接把`easyjpa-core`代码clone下来，然后直接copy到你的工程即可。
 
 2. 指定数据源
 
-easyjpa所有的curd操作都是封装在`EasyJpaDao`这个通用的dao组件里的，`EasyJpaDao`默认使用Jdbc原始的sql执行器，一般来说，它应配置成单例模式，比如后续你将看到整合到Spring中。
+EasyJpa所有的curd操作都是封装在`EasyJpaDao`这个通用的dao组件里的，`EasyJpaDao`默认使用Jdbc原始的sql执行器，一般来说，它应配置成单例模式，比如后续你将看到整合到Spring中。
 
 目前你可以在你的测试类中先使用如下的代码来实例化一个简单的EasyJpaDao。
 ```java
@@ -314,7 +314,7 @@ public void test08(){
 ```
 你可以看到，占位符的sql风格很像mybaits里的mapper文件，其实就是借鉴了mybaits的格式。
 
-然后可能还会注意到程序里并没有指定`${tableName}`这个参数，但是程序还是执行成功了。这是因为如果你传入的是一个实体类，easyjpa会自动获取到该类对应的表名，然后注入到placeholderSql里。后面你会看到更多细节。
+然后可能还会注意到程序里并没有指定`${tableName}`这个参数，但是程序还是执行成功了。这是因为如果你传入的是一个实体类，EasyJpa会自动获取到该类对应的表名，然后注入到placeholderSql里。后面你会看到更多细节。
 
 # 为什么还要造轮子？（解决了什么问题）
 
@@ -333,7 +333,7 @@ Mybaits与Hibernate的优点就不过多说了，毕竟是很成熟的框架。M
 2. 工程臃肿
 
 mybaits的sql都是写在`*.mapper.xml`这样的映射文件，基本上一个类一个映射文件。当工程比较大时，数据库表非常多时，你会发现你的工程躺着大量的mapper.xml文件以及mapper接口，这样会显得你的工程特别臃肿。比如：
-![](@attachment/Clipboard_2021-01-06-16-07-44.png)
+![](https://blog.abreaking.com/upload/2021/01/1c52lfbhsejprotp4e7b8h9q8b.png)
 
 3. 无法快速响应数据库表结构的修改
 如果数据库表结构发生改变，比如新加入了一个字段，那么mybaits就需要先修改实体类，然后再修改mapper文件里实体类的映射信息，最后再调整相关sql语句。这是一个非常繁琐的步骤。
