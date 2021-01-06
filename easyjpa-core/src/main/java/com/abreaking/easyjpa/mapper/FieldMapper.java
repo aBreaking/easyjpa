@@ -40,7 +40,7 @@ public class FieldMapper {
         this.columnName = field.isAnnotationPresent(Column.class)?
                 field.getAnnotation(Column.class).name():
                 StringUtils.underscoreName(field.getName());
-        this.columnType = SqlUtil.getSqlType(field.getType());
+        this.columnType = SqlUtil.getSoftSqlType(field.getType());
         this.getterMethod = method;
         this.filedName = field.getName();
     }

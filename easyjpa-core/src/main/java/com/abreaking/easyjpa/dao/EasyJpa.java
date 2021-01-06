@@ -2,6 +2,8 @@ package com.abreaking.easyjpa.dao;
 
 import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.condition.Conditions;
+import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
+import com.abreaking.easyjpa.dao.prepare.PreparedMapper;
 import com.abreaking.easyjpa.exception.NoSuchFieldOrColumnException;
 import com.abreaking.easyjpa.mapper.FieldMapper;
 import com.abreaking.easyjpa.dao.condition.SqlConst;
@@ -51,13 +53,57 @@ public final class EasyJpa<T> extends EasyJpaMapper implements Conditions {
         addCondition(SqlConst.OR,condition);
     }
 
-
     public void orderBy(String fcName,Boolean asc){
         addCondition(SqlConst.ORDER_BY,Condition.to(fcName," ORDER BY ",asc?"ASC":"DESC"));
     }
 
     public void limit(int start,int offset){
         addCondition(SqlConst.LIMIT,Condition.prepare("limit ?,?",start,offset),true);
+    }
+
+    public static PreparedMapper buildPrepared(String prepareSql, Object...values){
+        return new PreparedMapper(prepareSql,values);
+    }
+    public static PlaceholderMapper buildPlaceholder(String placeholderSql, Map<String,Object> argsMap){
+        return new PlaceholderMapper(placeholderSql,argsMap);
+    }
+    public static <T> PlaceholderMapper buildPlaceholder(String placeholderSql, T entity){
+        return new PlaceholderMapper(placeholderSql,entity);
+    }
+
+    @Override
+    public void set(String fcName, Object value) {
+        super.set(fcName, value);
+        addCondition(SqlConst.AND,Condition.equal(fcName,value));
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        this.conditionMap.clear();
+    }
+
+    public void remove(SqlConst sqlConst) {
+        conditionMap.remove(sqlConst);
+    }
+
+    @Override
+    public List<Condition> getConditions(SqlConst sqlConst){
+        return conditionMap.get(sqlConst);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = obj.hashCode();
+        for (SqlConst sqlConst : conditionMap.keySet()){
+            List<Condition> list = conditionMap.get(sqlConst);
+            if (!list.isEmpty()){
+                for (Condition element : list){
+                    result = 31 * result + (element == null ? 0 : element.hashCode());
+                }
+            }
+        }
+        return result;
     }
 
     private void fcNameWithOperator(SqlConst sqlConst,String fcNameWithOperator,Object...values){
@@ -107,50 +153,13 @@ public final class EasyJpa<T> extends EasyJpaMapper implements Conditions {
             conditionMap.put(key,Collections.singletonList(condition));
             return;
         }
-
         if (conditionMap.containsKey(key)){
-            list = this.conditionMap.get(key);
-            list.add(condition);
+            list = conditionMap.get(key);
         }else{
             list = new ArrayList();
             conditionMap.put(key,list);
         }
         list.add(condition);
-    }
-
-    @Override
-    public void set(String fcName, Object value) {
-        super.set(fcName, value);
-        addCondition(SqlConst.AND,Condition.equal(fcName,value));
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
-        this.conditionMap.clear();
-    }
-
-    public void remove(SqlConst sqlConst) {
-        conditionMap.remove(sqlConst);
-    }
-
-    @Override
-    public List<Condition> getConditions(SqlConst sqlConst){
-        return conditionMap.get(sqlConst);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = obj.hashCode();
-        for (SqlConst sqlConst : conditionMap.keySet()){
-            List<Condition> list = conditionMap.get(sqlConst);
-            if (!list.isEmpty()){
-                for (Condition element : list){
-                    result = 31 * result + (element == null ? 0 : element.hashCode());
-                }
-            }
-        }
-        return result;
     }
 
 }

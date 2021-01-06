@@ -1,6 +1,7 @@
 package com.abreaking.easyjpa.sql;
 
 import com.abreaking.easyjpa.dao.EasyJpa;
+import com.abreaking.easyjpa.dao.prepare.PreparedMapper;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.util.SqlUtil;
 
@@ -14,24 +15,23 @@ import com.abreaking.easyjpa.util.SqlUtil;
  */
 public class PrepareSqlBuilder extends AbstractSqlBuilder{
 
-
-    String prepareSql;
-
-    Object[] values ;
+    private PreparedMapper preparedMapper;
 
 
-    public PrepareSqlBuilder(String prepareSql,Object...values){
-        this.prepareSql = prepareSql;
-        this.values = values;
+    public PrepareSqlBuilder(PreparedMapper preparedMapper){
+        this.preparedMapper = preparedMapper;
     }
 
     @Override
     protected void doVisit(EasyJpa easyJpa, ColumnMatrix columnMatrix) {
-        sqlBuilder.append(prepareSql);
-        int i = 0;
-        for (Object value : values){
-            columnMatrix.put("placeholder"+i,SqlUtil.getSqlType(value.getClass()),value);
+        sqlBuilder.append(preparedMapper.getPrepareSql());
+        if (preparedMapper.getArgs()!=null){
+            int i = 0;
+            for (Object value : preparedMapper.getArgs()){
+                columnMatrix.put("placeholder"+i,SqlUtil.getSoftSqlType(value.getClass()),value);
+            }
         }
+
     }
 
 }

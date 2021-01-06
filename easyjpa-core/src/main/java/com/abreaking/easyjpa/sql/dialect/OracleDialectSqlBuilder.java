@@ -20,7 +20,7 @@ public class OracleDialectSqlBuilder extends AbstractDialectSqlBuilder{
         int rowEnd = pageSize+rowStart;
         sqlBuilder.insert(0,"SELECT * FROM (SELECT ej_tmp.*, ROWNUM ej_rowStart FROM ( ");
         sqlBuilder.append(" ) ej_tmp WHERE ROWNUM <= ?) WHERE ej_rowStart >= ?");
-        columnMatrix.put("rowEnd",SqlUtil.getSqlType(Integer.class),rowEnd);
-        columnMatrix.put("rowStart",SqlUtil.getSqlType(Integer.class),rowStart);
+        columnMatrix.put("rowEnd",SqlUtil.getSoftSqlType(Integer.class),rowEnd);
+        columnMatrix.put("rowStart",SqlUtil.getSoftSqlType(Integer.class),rowStart);
     }
 }

@@ -8,6 +8,7 @@ import com.abreaking.easyjpa.mapper.RowMapper;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.mapper.matrix.MatrixFactory;
+import com.abreaking.easyjpa.util.SqlUtil;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -80,7 +81,7 @@ public abstract class EasyJpaMapper<T> implements MatrixMapper,RowMapper {
             try {
                 Field field = fieldMapper.getField();
                 field.setAccessible(true);
-                Object o = getResultSetValue(rs, i, field.getType());
+                Object o = SqlUtil.getSoftResultSetValue(rs, i, field.getType());
                 field.set(instance,o);
             } catch (IllegalAccessException e) {
                 continue;

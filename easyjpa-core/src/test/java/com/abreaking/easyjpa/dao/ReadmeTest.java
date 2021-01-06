@@ -4,6 +4,8 @@ import com.abreaking.easyjpa.User;
 import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.condition.Page;
 import com.abreaking.easyjpa.dao.impl.EasyJpaDaoImpl;
+import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
+import com.abreaking.easyjpa.dao.prepare.PreparedMapper;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -32,7 +34,7 @@ public class ReadmeTest {
         try {
             Class.forName(jdbcDriver);
             Connection connection = DriverManager.getConnection(jdbcUrl, jdbcUserName, jdbcPassword);
-            connection.setAutoCommit(true);
+            connection.setAutoCommit(true); // update/insert/delete 自动提交
             return connection;
         }catch (Exception e){
             throw new RuntimeException(e);
@@ -70,55 +72,93 @@ public class ReadmeTest {
 
     }
 
-
     @Test
-    public void test05() throws ParseException {
-        EasyJpa easyJpa = new EasyJpa(User.class);
-        easyJpa.or(Condition.like("userName","a"));
-        easyJpa.or(Condition.like("userName","z"));
-        easyJpa.and(Condition.to("birthday",">",new SimpleDateFormat("yyyy-MM-dd").parse("2020-12-10")));
-        easyJpa.and(Condition.between("user_id",2,6));
-        easyJpa.limit(1,10);
-        prettyPrint(dao.query(easyJpa));
-
-        EasyJpa e2 = new EasyJpa(User.class);
-        e2.set("userId",6);
-        e2.set("birthday",new Date());
-        dao.update(e2);
-        prettyPrint(dao.query(e2));
-        prettyPrint(dao.query(easyJpa));
-
-    }
-
-    @Test
-    public void test03(){
+    public void test08(){
+        String prepareSql = "select user_name,height from ${tableName} where user_name like #{userName} and height>#{height}";
         User user = new User();
-        user.setUserId(1);
-        user.setUserName("lisi");
-        dao.update(user);
+        user.setUserName("%王%");
+        user.setHeight(1.7F);
+        PlaceholderMapper placeholderMapper = EasyJpa.buildPlaceholder(prepareSql, user);
+        List<User> list = dao.queryByPlaceholderSql(placeholderMapper,User.class);
+        prettyPrint(list);
     }
 
     @Test
-     public void test04(){
+    public void test07(){
+        String prepareSql = "select user_id,user_name from user where user_name like ? and height>?";
+        PreparedMapper preparedMapper = EasyJpa.buildPrepared(prepareSql, "%王%", 1.7F);
+        List<User> list = dao.queryByPreparedSql(preparedMapper,User.class);
+        prettyPrint(list);
+    }
+
+    @Test
+    public void test06() throws ParseException {
+        EasyJpa easyJpa = new EasyJpa(User.class);
+        easyJpa.select("userName","birthday");
+        easyJpa.or(Condition.like("userName","张"));
+        easyJpa.or(Condition.like("userName","李"));
+        easyJpa.and(Condition.to("birthday",">",new SimpleDateFormat("yyyy-MM-dd").parse("2020-12-10")));
+        easyJpa.and(Condition.between("user_id",0,8));
+        easyJpa.orderBy("userName",false);
+        easyJpa.limit(0,5);
+        List<User> userList = dao.queryByCondition(easyJpa);
+        prettyPrint(userList);
+    }
+
+    @Test
+    public void test05(){
+        User user = new User();
+        user.setUserName("zhangsan");
+        user.setUserId(1);
+        List<User> userList = dao.query(user);
+        prettyPrint(userList);
+    }
+
+    @Test
+    public void test04(){
         User user = dao.get(User.class, 1);
         System.out.println(user);
     }
 
     @Test
+    public void test031(){
+        User user = new User();
+        user.setBirthday(new Date());
+
+        EasyJpa easyJpa = new EasyJpa(User.class);
+        easyJpa.and(Condition.like("userName","张"));
+
+        dao.updateByCondition(user,easyJpa);
+    }
+
+
+    @Test
+    public void test03(){
+        User user = new User();
+        user.setUserId(1); // 指定主键值
+        user.setUserName("张大三"); // 只修改userName这个字段
+        dao.update(user);
+    }
+
+
+
+    @Test
     public void test02(){
-        dao.delete(User.class,1);
+        dao.deleteById(User.class,1);
     }
 
     @Test
     public void test01(){
         User user = new User();
-        user.setUserName("lisi");
+        user.setUserId(1);
+        user.setUserName("张三");
         user.setBirthday(new Date());
+        user.setHeight(1.81F);
+        user.setPhoneNo(1008611L);
         dao.insert(user);
     }
 
     private void prettyPrint(List list){
-        System.out.println("start---------------");
 
         if (list.isEmpty()){
             System.out.println("result is empty");
@@ -126,6 +166,5 @@ public class ReadmeTest {
         for (Object o : list){
             System.out.println(o);
         }
-        System.out.println("end---------------");
     }
 }

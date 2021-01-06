@@ -13,6 +13,15 @@ import java.util.Map;
  */
 public class JavaMapRowMapper implements RowMapper{
 
+    private Class[] returnTypes;
+
+    public JavaMapRowMapper(Class[] returnTypes) {
+        this.returnTypes = returnTypes;
+    }
+
+    public JavaMapRowMapper() {
+    }
+
     @Override
     public Map mapRow(ResultSet rs, int rowNum) throws SQLException {
         ResultSetMetaData metaData = rs.getMetaData();
@@ -21,7 +30,8 @@ public class JavaMapRowMapper implements RowMapper{
         for (int i = 1; i <= columnCount; i++) {
             int columnType = metaData.getColumnType(i);
             String columnName = metaData.getColumnName(i);
-            Object value = getResultSetValue(rs, i, SqlUtil.getJavaType(columnType));
+            Class type = returnTypes!=null&&returnTypes.length>=i?returnTypes[i-1]:SqlUtil.getSoftJavaType(columnType);
+            Object value = SqlUtil.getSoftResultSetValue(rs, i, type);
             map.put(columnName,value);
         }
         return map;

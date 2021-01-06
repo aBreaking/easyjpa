@@ -20,8 +20,8 @@ public class MysqlDialectSqlBuilder extends AbstractDialectSqlBuilder{
             sqlBuilder.append("LIMIT ?");
         }else{
             sqlBuilder.append("LIMIT ?,?");
-            columnMatrix.put("pageStartIndex",SqlUtil.getSqlType(Integer.class),pageStartIndex);
+            columnMatrix.put("pageStartIndex",SqlUtil.getSoftSqlType(Integer.class),pageStartIndex);
         }
-        columnMatrix.put("pageSize",SqlUtil.getSqlType(Integer.class),pageSize);
+        columnMatrix.put("pageSize",SqlUtil.getSoftSqlType(Integer.class),pageSize);
     }
 }
