@@ -2,11 +2,13 @@ package com.abreaking.easyjpa.sql;
 
 import com.abreaking.easyjpa.dao.EasyJpa;
 import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
+import com.abreaking.easyjpa.exception.EasyJpaException;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.StringUtils;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,13 +32,11 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
 
     @Override
     protected void doVisit(EasyJpa easyJpa, ColumnMatrix columnMatrix) {
-        String placeholderSql = placeholderMapper.getPlaceholderSql();
         Map<String, Object> argsMap = placeholderMapper.getArgsMap();
         Set<Class> entitySet = placeholderMapper.getEntitySet();
-
-        if(argsMap.isEmpty() || entitySet.isEmpty()){
-            sqlBuilder.append(placeholderSql);
-            return;
+        List<PlaceholderMapper.Fragment> fragments = placeholderMapper.getSqlFragmentList();
+        if (fragments.isEmpty()){
+            throw new EasyJpaException("no placeholder sql statement specified");
         }
 
         if (easyJpa != null){
@@ -46,26 +46,87 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
             fillParams(argsMap,new EasyJpa(entity));
         }
 
-        Matcher matcher = pattern.matcher(placeholderSql);
+        //有一种情况，传入的是一条sql
+        if (fragments.size()==1){
+            PlaceholderMapper.Fragment fragment = fragments.get(0);
+            //一条完整的sql就不再进行notStay判断了
+            sqlBuildIfStay(columnMatrix,fragment.getFragmentSql(),argsMap,(value,key)->{
+                if (value==null)throw new EasyJpaException("The placeholder parameter '"+key+"' does not specify the corresponding value of the parameter. The placeholder sql is："+fragment.getFragmentSql());
+                return true;
+            });
+            return;
+        }
+
+        for (PlaceholderMapper.Fragment fragment : fragments){
+            String fragmentSql = fragment.getFragmentSql();
+            String argKey = fragment.getArgKey();
+            Object rule = fragment.getRule();
+
+            int sqlBuilderStart = sqlBuilder.length();
+            if (StringUtils.isNotEmpty(argKey)){
+                if (notStay(argsMap, argKey, rule)) continue;
+            }
+            sqlBuildIfStay(columnMatrix,fragmentSql,argsMap,(value,key)->{
+                if (notStay(argsMap,key,null)){
+                    sqlBuilder.delete(sqlBuilderStart,sqlBuilder.length());
+                    return false;
+                }
+                return true;
+            });
+        }
+        if (sqlBuilder.length() == 0){
+            throw new EasyJpaException("The placeholder parameter parsing failed. All the placeholder parameters have no specified values or the definition rules are incorrect. The placeholder SQL is："+placeholderMapper.toPlaceholderSql());
+        }
+    }
+
+    /**
+     * 解析占位符，并组装sql
+     * @param columnMatrix
+     * @param placeholderFragmentSql
+     * @param argsMap
+     */
+    private void sqlBuildIfStay(ColumnMatrix columnMatrix, String placeholderFragmentSql, Map<String, Object> argsMap,BiFunction<Object,String,Boolean> bt){
+        Matcher matcher = pattern.matcher(placeholderFragmentSql);
         int i = 0;
         while (matcher.find()){
-            int start = matcher.start();
-            sqlBuilder.append(placeholderSql, i, start);
             String group = matcher.group();
-            String key = group.substring(2,group.length()-1);
-            if (!argsMap.containsKey(key)){
+            String argKey = group.substring(2,group.length()-1);
+            Object value = argsMap.get(argKey);
 
+            if (!bt.apply(value, argKey)){
+                return;
             }
-            Object value = argsMap.get(key);
+
+            sqlBuilder.append(placeholderFragmentSql, i, matcher.start());
             if (group.startsWith("${")){
                 sqlBuilder.append(value);
             }else{
                 sqlBuilder.append("?");
-                columnMatrix.put(key,SqlUtil.getSoftSqlType(value.getClass()),value);
+                columnMatrix.put(argKey,SqlUtil.getSoftSqlType(value.getClass()),value);
             }
             i = matcher.end();
         }
-        sqlBuilder.append(placeholderSql,i,placeholderSql.length());
+        sqlBuilder.append(placeholderFragmentSql,i,placeholderFragmentSql.length());
+        sqlBuilder.append(" ");
+    }
+
+
+    /**
+     * 根据rule来决定 key是否留下
+     * @param argsMap
+     * @param key
+     * @param rule
+     * @return
+     */
+    private boolean notStay(Map<String, Object> argsMap,String key,Object rule){
+        if (argsMap.containsKey(key)){
+            Object o = argsMap.get(key);
+            Class<?> type = o.getClass();
+            if (type.equals(String.class)) return StringUtils.isEmpty((String)o);
+            if (type.isAssignableFrom(Collection.class)) return ((Collection)o).isEmpty();
+            return o == rule || o.equals(rule);
+        }
+        return true;
     }
 
     /**

@@ -60,7 +60,7 @@ public class MyDaoTest {
     }
 
 
-    private void prettyPrint(List list){
+    public static void prettyPrint(List list){
         if (list.isEmpty()){
             System.out.println("result is empty");
         }

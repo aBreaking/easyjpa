@@ -5,10 +5,7 @@ import com.abreaking.easyjpa.util.ReflectUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 占位符sql的封装
@@ -16,24 +13,27 @@ import java.util.Set;
  * @date 2021/1/6
  */
 public class PlaceholderMapper {
-    // 占位符sql
-    private String placeholderSql;
+
+    private List<Fragment> sqlFragmentList = new ArrayList<>();
     // 占位符的参数即对应值
     private Map<String, Object> argsMap = new HashMap<>();
     // 实体类，可对占位符里的一些特殊参数进行映射，比如表名，主键名等
     private Set<Class> entitySet = new HashSet<>();
 
+    public PlaceholderMapper() {
+    }
+
     public PlaceholderMapper(String placeholderSql) {
-        this.placeholderSql = placeholderSql;
+        this.addSqlFragment(placeholderSql);
     }
 
     public PlaceholderMapper(String placeholderSql, Map<String, Object> argMap) {
-        this.placeholderSql = placeholderSql;
+        this(placeholderSql);
         this.argsMap = argMap;
     }
 
     public PlaceholderMapper(String placeholderSql, Object entity) {
-        this.placeholderSql = placeholderSql;
+        this(placeholderSql);
         this.argsMap = new HashMap<>();
         Map<String, Method> methodMap = ReflectUtil.poGetterMethodsMap(entity.getClass());
         for (String filedName : methodMap.keySet()){
@@ -46,28 +46,72 @@ public class PlaceholderMapper {
             } catch (IllegalAccessException | InvocationTargetException e) {
             }
         }
-        entitySet.add(entity.getClass());
+        this.addEntity(entity.getClass());
     }
 
-    public String getPlaceholderSql() {
-        return placeholderSql;
+    public void addSqlFragment(String sqlFragmentWithPlaceholder) {
+        addSqlFragment(sqlFragmentWithPlaceholder,null,null);
     }
 
-    public Map<String, Object> getArgsMap() {
-        return argsMap;
+    public void addSqlFragment(String sqlFragmentWithPlaceholder,String argKey) {
+        addSqlFragment(sqlFragmentWithPlaceholder,argKey,null);
+    }
+
+    public void addSqlFragment(String sqlFragmentWithPlaceholder,String argKey,Object rule){
+        Fragment fragment = new Fragment();
+        fragment.fragmentSql = sqlFragmentWithPlaceholder;
+        fragment.argKey = argKey;
+        fragment.rule = rule;
+        sqlFragmentList.add(fragment);
+    }
+
+    public void addEntity(Class type){
+        this.entitySet.add(type);
     }
 
     public void setArgsMap(Map<String, Object> argsMap) {
         this.argsMap = argsMap;
     }
 
+    public List<Fragment> getSqlFragmentList() {
+        return sqlFragmentList;
+    }
+
+    public Map<String, Object> getArgsMap() {
+        return argsMap;
+    }
+
     public Set<Class> getEntitySet() {
         return entitySet;
     }
 
-    public void addEntities(Class...entities) {
-        for (Class c : entities){
-            entitySet.add(c);
+    public String toPlaceholderSql(){
+        StringBuilder builder = new StringBuilder();
+        for (Fragment f : sqlFragmentList){
+            builder.append(f.getFragmentSql());
+            builder.append(" ");
+        }
+        return builder.toString();
+    }
+
+    /**
+     * sql碎片，支持根据rule来决定sql是要还是不要
+     */
+    public static class Fragment{
+        private String argKey;
+        private String fragmentSql;
+        private Object rule;
+
+        public String getArgKey() {
+            return argKey;
+        }
+
+        public String getFragmentSql() {
+            return fragmentSql;
+        }
+
+        public Object getRule() {
+            return rule;
         }
     }
 }
