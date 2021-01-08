@@ -41,7 +41,7 @@ public class ReadmeTest {
         }
     }
 
-    static EasyJpaDao dao = new EasyJpaDaoImpl(localhostConnection());
+    public static EasyJpaDao dao = new EasyJpaDaoImpl(localhostConnection());
 
 
     @Test
@@ -158,7 +158,7 @@ public class ReadmeTest {
         dao.insert(user);
     }
 
-    private void prettyPrint(List list){
+    public static void prettyPrint(List list){
 
         if (list.isEmpty()){
             System.out.println("result is empty");

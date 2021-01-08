@@ -1,9 +1,8 @@
 package com.abreaking.easyjpa.sql;
 
 import com.abreaking.easyjpa.dao.EasyJpa;
-import com.abreaking.easyjpa.dao.MyDaoTest;
+import com.abreaking.easyjpa.dao.ReadmeTest;
 import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
-import com.abreaking.easyjpa.dao.prepare.PreparedMapper;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import org.junit.Test;
 
@@ -31,8 +30,8 @@ public class PlaceHolderSqlBuilderTest {
     @Test
     public void test02(){
         PlaceholderMapper preparedMapper = EasyJpa.buildPlaceholder("select * from ${user} where 1=1 and user_id=#{userId} and user_name like concat('%',#{userName},'%')", map);
-        List list = MyDaoTest.dao.queryByPlaceholderSql(preparedMapper);
-        MyDaoTest.prettyPrint(list);
+        List list = ReadmeTest.dao.queryByPlaceholderSql(preparedMapper);
+        ReadmeTest.prettyPrint(list);
     }
 
     @Test
@@ -44,8 +43,8 @@ public class PlaceHolderSqlBuilderTest {
 
         placeholderMapper.setArgsMap(map);
 
-        List list = MyDaoTest.dao.queryByPlaceholderSql(placeholderMapper);
-        MyDaoTest.prettyPrint(list);
+        List list = ReadmeTest.dao.queryByPlaceholderSql(placeholderMapper);
+        ReadmeTest.prettyPrint(list);
 
     }
 
