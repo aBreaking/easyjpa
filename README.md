@@ -1,6 +1,6 @@
 # EasyJpa是什么
 
-EasyJpa是一个轻量的、全自动对象关系映射（ORM）的Java框架。它将实体类与数据库表建立的映射关系，提供通用的CURD操作方法，自动生成预处理的SQL语句并执行，使用者可以通过面向对象的方式轻松进行JDBC的操作。
+EasyJpa是一个轻量的、全自动对象关系映射（ORM）的Java框架。它将实体类与数据库表建立的映射关系，提供持久层的API，增删改查操作对任意实体类通用，能够自动生成预处理的SQL语句并执行，使用者可以通过面向对象的思维方式来轻松完成JDBC的操作。
 
 它具有以下特点：
 
@@ -10,18 +10,18 @@ EasyJpa上手简单，只要有数据源连接Connection，甚至可以不需要
 
 2. 无侵入性
 
-EasyJpa遵循Java Persistence API规范，使用`javax.persistence`相关的注解，即可实现对象表关系映射，不会对你的POJO实体类造成任何污染。
+EasyJpa遵循Java Persistence API规范，使用`javax.persistence`相关的注解，甚至可以不用注解，实现了对象表关系映射，不会对你的POJO实体类代码造成污染。
 
 3. 通用增删改查API
 
-EasyJpa将对象本身即可视为SQL的条件，并提供SQL关键字对应的API，你可以通过面向对象的思维方式，来进行数据库的增删改查操作。
+EasyJpa提供了的dao层的增删改查API，均对任意实体类通用。封装了一些SQL关键字的API，你可以通过面向对象的思维方式，来进行jdbc操作。
 
 4. 支持动态SQL，类型自动包装
 
-EasyJpa也支持你直接使用预处理SQL语句或类似Mybaits的预处理的SQL，SQL参数类型可以自动转换，并支持自定义返回类型。
+EasyJpa也支持你直接使用预处理SQL语句或类似Mybaits的预处理的SQL，并对SQL参数类型、返回结果类型自动转换，也支持自定义返回类型。
 
 
-如果你是Mybaits或Hibernate的使用者，你可能会疑惑我为什么还要重复造轮子，那么我建议可以先看看这个[为什么还要重复造轮子](https://github.com/aBreaking/easyjpa/wiki/%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%98%E8%A6%81%E9%80%A0%E8%BD%AE%E5%AD%90%EF%BC%89)。
+如果你是Mybaits或Hibernate的使用者，你可能会疑惑我为什么还要重复造轮子？EasyJpa有什么区别？解决了什么问题？那么我建议可以先看看这个：[为什么还要重复造轮子](https://github.com/aBreaking/easyjpa/wiki/%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%98%E8%A6%81%E9%80%A0%E8%BD%AE%E5%AD%90%EF%BC%89)。
 
 # 一些约定
 
