@@ -5,6 +5,7 @@ import com.abreaking.easyjpa.dao.cache.EjCache;
 import com.abreaking.easyjpa.dao.cache.EjCacheFactory;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
+import com.abreaking.easyjpa.executor.ConnectionHolder;
 import com.abreaking.easyjpa.executor.JdbcSqlExecutor;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.RowMapper;
@@ -29,9 +30,9 @@ public class CurdTemplate<T> {
     protected EjCache cache;
 
     public CurdTemplate(SqlExecutor sqlExecutor) {
-        EasyJpaConfiguration.setDialectWithConnection(sqlExecutor.getConnection());
         this.sqlExecutor = sqlExecutor;
-        this.cache = EjCacheFactory.getDefaultCache();
+        this.cache = EjCacheFactory.getDefaultCache(sqlExecutor);
+        EasyJpaConfiguration.setDialectWithConnection(sqlExecutor.getConnectionHolder());
     }
 
     public CurdTemplate(Connection connection){
@@ -46,7 +47,17 @@ public class CurdTemplate<T> {
      */
     public List<T> select(EasyJpa jpa,RowMapper<T> rowMapper) {
         // 应该在此处进行缓存
-        return (List<T>) cache.getIfAbsent(jpa,rowMapper,()->doSelect(new SelectSqlBuilder(),jpa,rowMapper));
+        ConnectionHolder holder = sqlExecutor.getConnectionHolder();
+        try{
+            if (holder.getConnection().getAutoCommit()){
+                return (List<T>) cache.getIfAbsent(jpa,rowMapper,()->doSelect(new SelectSqlBuilder(),jpa,rowMapper));
+            }else{
+                return doSelect(new SelectSqlBuilder(), jpa, rowMapper);
+            }
+        }catch (SQLException e){
+            throw new EasyJpaSqlExecutionException(e);
+        }
+
     }
 
     public void update(EasyJpa jpa,Conditions conditions){

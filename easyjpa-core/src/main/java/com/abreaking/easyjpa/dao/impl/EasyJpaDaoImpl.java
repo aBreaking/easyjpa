@@ -78,7 +78,7 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
         EasyJpa easyJpa = new EasyJpa(obj);
         easyJpa.and(Condition.equal(easyJpa.getIdName(),idValue));
         List list = select(easyJpa,easyJpa);
-        return list.get(0);
+        return list.isEmpty()?null:list.get(0);
     }
 
     @Override

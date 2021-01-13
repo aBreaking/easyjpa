@@ -21,8 +21,8 @@ public class JdbcSqlExecutor implements SqlExecutor{
     }
 
     @Override
-    public Connection getConnection() {
-        return this.connection;
+    public ConnectionHolder getConnectionHolder() {
+        return new ConnectionHolder(connection);
     }
 
     @Override

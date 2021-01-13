@@ -1,13 +1,13 @@
 package com.abreaking.easyjpa.config;
 
 
+import com.abreaking.easyjpa.executor.ConnectionHolder;
 import com.abreaking.easyjpa.util.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Connection;
 import java.util.Map;
 import java.util.Properties;
 
@@ -69,16 +69,16 @@ public class EasyJpaConfiguration {
 
     /**
      * 根据数据源连接 信息来初始化数据库方言的配置
-     * @param connection
+     * @param holder
      */
-    public static void setDialectWithConnection(Connection connection){
+    public static void setDialectWithConnection(ConnectionHolder holder){
         Configuration dialect = Configuration.dialect;
         if (dialect.hasInitialization){
             return;
         }
         try {
             // 通过url来判断数据库的方言
-            String url = connection.getMetaData().getURL();
+            String url = holder.getJdbcUrl();
             if (url.startsWith("jdbc:mysql")){
                 dialect.value = "mysql";
                 return;
