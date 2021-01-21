@@ -7,8 +7,9 @@ import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.util.SqlUtil;
 import com.abreaking.easyjpa.util.StringUtils;
 
+import java.sql.Types;
 import java.util.*;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,10 +51,7 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
         if (fragments.size()==1){
             PlaceholderMapper.Fragment fragment = fragments.get(0);
             //一条完整的sql就不再进行notStay判断了
-            sqlBuildIfStay(columnMatrix,fragment.getFragmentSql(),argsMap,(value,key)->{
-                if (value==null)throw new EasyJpaException("The placeholder parameter '"+key+"' does not specify the corresponding value of the parameter. The placeholder sql is："+fragment.getFragmentSql());
-                return true;
-            });
+            sqlBuildIfStay(columnMatrix,fragment.getFragmentSql(),argsMap,key->true);
             return;
         }
 
@@ -66,7 +64,7 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
             if (StringUtils.isNotEmpty(argKey)){
                 if (notStay(argsMap, argKey, rule)) continue;
             }
-            sqlBuildIfStay(columnMatrix,fragmentSql,argsMap,(value,key)->{
+            sqlBuildIfStay(columnMatrix,fragmentSql,argsMap,key->{
                 if (notStay(argsMap,key,null)){
                     sqlBuilder.delete(sqlBuilderStart,sqlBuilder.length());
                     return false;
@@ -84,25 +82,26 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
      * @param columnMatrix
      * @param placeholderFragmentSql
      * @param argsMap
+     * @param bt
      */
-    private void sqlBuildIfStay(ColumnMatrix columnMatrix, String placeholderFragmentSql, Map<String, Object> argsMap,BiFunction<Object,String,Boolean> bt){
+    private void sqlBuildIfStay(ColumnMatrix columnMatrix, String placeholderFragmentSql, Map<String, Object> argsMap,Function<String,Boolean> bt){
         Matcher matcher = pattern.matcher(placeholderFragmentSql);
         int i = 0;
         while (matcher.find()){
             String group = matcher.group();
             String argKey = group.substring(2,group.length()-1);
-            Object value = argsMap.get(argKey);
-
-            if (!bt.apply(value, argKey)){
+            if (!bt.apply(argKey)){
                 return;
             }
-
+            Object value = argsMap.get(argKey); // 这里value可能为空值
             sqlBuilder.append(placeholderFragmentSql, i, matcher.start());
             if (group.startsWith("${")){
+                if (value==null) throw new EasyJpaException("The placeholder parameter '"+argKey+"' does not specify the corresponding value of the parameter or its value may be NULL. The placeholder sql is："+placeholderFragmentSql);;
                 sqlBuilder.append(value);
             }else{
                 sqlBuilder.append("?");
-                columnMatrix.put(argKey,SqlUtil.getSoftSqlType(value.getClass()),value);
+                int type = value==null?Types.NULL : SqlUtil.getSoftSqlType(value.getClass());
+                columnMatrix.put(argKey,type,value);
             }
             i = matcher.end();
         }

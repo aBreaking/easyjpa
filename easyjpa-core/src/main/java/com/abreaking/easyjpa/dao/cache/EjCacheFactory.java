@@ -21,7 +21,7 @@ public class EjCacheFactory {
         if (!CACHE_MAP.containsKey(key)){
             synchronized (CACHE_MAP){
                 if (!CACHE_MAP.containsKey(key)){
-
+                    CACHE_MAP.put(key,new LruEjCache());
                 }
             }
         }

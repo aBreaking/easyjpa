@@ -89,7 +89,6 @@ public class CurdTemplate<T> {
         Object[] values = matrix.values();
         int[] types = matrix.types();
         try {
-            System.out.println(prepareSql+"\n"+Arrays.toString(values));
             return sqlExecutor.query(prepareSql,values,types,rowMapper);
         }catch (SQLException e){
             throw new EasyJpaSqlExecutionException(prepareSql,values,e);
@@ -102,7 +101,6 @@ public class CurdTemplate<T> {
         Object[] values = matrix.values();
         int[] types = matrix.types();
         try {
-            System.out.println(prepareSql+"\n"+Arrays.toString(values));
             sqlExecutor.execute(prepareSql,values,types);
         } catch (SQLException e) {
             throw new EasyJpaSqlExecutionException(prepareSql,values,e);

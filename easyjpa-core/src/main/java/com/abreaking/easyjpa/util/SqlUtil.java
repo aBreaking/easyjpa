@@ -1,6 +1,5 @@
 package com.abreaking.easyjpa.util;
 
-import com.abreaking.easyjpa.exception.EasyJpaException;
 import com.abreaking.easyjpa.exception.ErrorTypeException;
 
 import java.math.BigDecimal;
