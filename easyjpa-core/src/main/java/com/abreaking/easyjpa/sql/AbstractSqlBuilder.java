@@ -1,7 +1,7 @@
 package com.abreaking.easyjpa.sql;
 
 import com.abreaking.easyjpa.config.Configuration;
-import com.abreaking.easyjpa.dao.EasyJpa;
+import com.abreaking.easyjpa.support.EasyJpa;
 import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.SqlConst;
@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  * @author liwei_paas
  * @date 2020/12/25
  */
-public abstract class AbstractSqlBuilder implements SqlBuilder{
+public abstract class AbstractSqlBuilder {
 
     StringBuilder sqlBuilder = new StringBuilder();
 
@@ -32,7 +32,6 @@ public abstract class AbstractSqlBuilder implements SqlBuilder{
 
     protected abstract void doVisit(EasyJpa easyJpa, ColumnMatrix columnMatrix);
 
-    @Override
     public Matrix visit(EasyJpa easyJpa) {
         ColumnMatrix columnMatrix = MatrixFactory.createColumnMatrix();
         doVisit(easyJpa,columnMatrix);

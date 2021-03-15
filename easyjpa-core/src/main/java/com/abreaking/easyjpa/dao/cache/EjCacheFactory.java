@@ -21,7 +21,7 @@ public class EjCacheFactory {
         if (!CACHE_MAP.containsKey(key)){
             synchronized (CACHE_MAP){
                 if (!CACHE_MAP.containsKey(key)){
-                    CACHE_MAP.put(key,new LruEjCache());
+                    CACHE_MAP.put(key,null);
                 }
             }
         }
@@ -39,11 +39,4 @@ public class EjCacheFactory {
 
     }
 
-    private static EjCache getDefaultCache(){
-        String config = Configuration.cache.getConfig();
-        if (config.equals("lru")){
-            return new LruEjCache();
-        }
-        return new LruEjCache();
-    }
 }

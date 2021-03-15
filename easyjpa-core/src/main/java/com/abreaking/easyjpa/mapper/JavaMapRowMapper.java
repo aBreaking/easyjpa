@@ -3,6 +3,7 @@ package com.abreaking.easyjpa.mapper;
 import com.abreaking.easyjpa.util.SqlUtil;
 
 import java.sql.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,4 +38,16 @@ public class JavaMapRowMapper implements RowMapper{
         return map;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        JavaMapRowMapper rowMapper = (JavaMapRowMapper) o;
+        return Arrays.equals(returnTypes, rowMapper.returnTypes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(returnTypes);
+    }
 }

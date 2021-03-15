@@ -1,9 +1,11 @@
 package com.abreaking.easyjpa.dao;
 
+import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.Page;
 import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
 import com.abreaking.easyjpa.dao.prepare.PreparedMapper;
 import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
+import com.abreaking.easyjpa.support.EasyJpa;
 
 import java.util.List;
 
@@ -81,7 +83,7 @@ public interface EasyJpaDao {
      * @param conditions 指定条件
      * @param <T> 实体
      */
-    <T> void updateByCondition(T entity,EasyJpa conditions);
+    <T> void updateByCondition(T entity,Conditions conditions);
 
     /**
      * 根据实体的数据删除对应的记录

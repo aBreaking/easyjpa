@@ -1,6 +1,6 @@
 package com.abreaking.easyjpa.sql;
 
-import com.abreaking.easyjpa.dao.EasyJpa;
+import com.abreaking.easyjpa.support.EasyJpa;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 
 

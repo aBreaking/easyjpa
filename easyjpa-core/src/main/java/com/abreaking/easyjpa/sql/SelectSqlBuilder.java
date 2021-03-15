@@ -1,7 +1,10 @@
 package com.abreaking.easyjpa.sql;
 
-import com.abreaking.easyjpa.dao.EasyJpa;
+import com.abreaking.easyjpa.dao.condition.Conditions;
+import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
+import com.abreaking.easyjpa.mapper.matrix.MatrixFactory;
+
 
 
 /**
@@ -9,21 +12,50 @@ import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
  * @author liwei_paas
  * @date 2020/12/15
  */
-public class SelectSqlBuilder extends AbstractSqlBuilder{
+public class SelectSqlBuilder implements SqlBuilder{
+
+    String table;
+
+    public SelectSqlBuilder(String table) {
+        this.table = table;
+    }
 
     @Override
-    protected void doVisit(EasyJpa easyJpa,ColumnMatrix matrix) {
+    public PreparedWrapper visit(Conditions conditions) {
 
-        visitSelect(easyJpa);
+        StringBuilder sqlBuilder = new StringBuilder();
 
-        sqlBuilder.append("FROM ").append(easyJpa.getTableName()).append(" ");
+        ColumnMatrix columnMatrix = MatrixFactory.createColumnMatrix();
 
-        visitWhere(easyJpa,matrix);
+        ConditionBuilderDelegate delegate = new ConditionBuilderDelegate(conditions);
 
-        visitOrderBy(easyJpa);
+        delegate.visitSelect(sqlBuilder);
 
-        visitPagination(easyJpa,matrix);
+        sqlBuilder.append("FROM ").append(table).append(" ");
 
+        delegate.visitWhere(sqlBuilder,columnMatrix);
+
+        delegate.visitOrderBy(sqlBuilder);
+
+        delegate.visitPagination(sqlBuilder);
+
+        return new PreparedWrapper(sqlBuilder.toString(),columnMatrix);
     }
+
+    public PreparedWrapper visitCount(Conditions conditions){
+        StringBuilder sqlBuilder = new StringBuilder();
+
+        ColumnMatrix columnMatrix = MatrixFactory.createColumnMatrix();
+
+        sqlBuilder.append("SELECT count(*) counter ").append(table).append(" ");
+
+        new ConditionBuilderDelegate(conditions).visitWhere(sqlBuilder,columnMatrix);
+
+        return new PreparedWrapper(sqlBuilder.toString(),columnMatrix);
+    }
+
+
+
+
 
 }

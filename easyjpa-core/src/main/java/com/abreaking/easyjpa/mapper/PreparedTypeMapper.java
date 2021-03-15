@@ -1,13 +1,11 @@
-package com.abreaking.easyjpa.dao.prepare;
+package com.abreaking.easyjpa.mapper;
 
-import com.abreaking.easyjpa.dao.EasyJpa;
 import com.abreaking.easyjpa.exception.EntityObjectNeedsException;
-import com.abreaking.easyjpa.mapper.JavaMapRowMapper;
-import com.abreaking.easyjpa.mapper.RowMapper;
 import com.abreaking.easyjpa.util.SqlUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -20,11 +18,11 @@ import java.util.Map;
  *  5. 指定了若干returnTypes，并且都是实体类的类型，那么返回一个数组，数组里的每个元素为你指定类型的对象，row的数据会自动封装到返回对象中去。
  *  6. 其他情况，全部默认返回 第1个所说的情况。
  *
- *  简单来说就总共只有如下三种返回类型：
+ *  简单来说就总共只有如下四种返回类型：
  *  1. 返回一个指定的基本类型的对象，指定了一个基本类型的returnType，并且sql执行结果只有一列的数据；
  *  2. 返回一个实体类的对象：指定了一个实体对象的returnType;
  *  3. 返回一个实体类对象的数组：指定了若干实体对象的returnType;
- *  4. "Map<String,Object>"  其他情况
+ *  4. 其他情况 均返回"Map<String,Object>"
  *
  * @author liwei_paas
  * @date 2021/1/6
@@ -44,7 +42,7 @@ public class PreparedTypeMapper implements RowMapper {
                 Class returnType = returnTypes[0];
                 if (SqlUtil.getSqlType(returnType)==0){
                     try {
-                        return new EasyJpa(returnType).mapRow(rs, rowNum);
+                        return new ClassRowMapper(returnType).mapRow(rs,rowNum);
                     }catch (EntityObjectNeedsException e){
                         // 既不是正常的实体类，也不是基本类型，那么就最后默认处理了
                     }
@@ -65,7 +63,7 @@ public class PreparedTypeMapper implements RowMapper {
                     try{
                         Object[] entities = new Object[returnTypes.length];
                         for (int j = 0; j < returnTypes.length; j++) {
-                            entities[j] = new EasyJpa(returnTypes[j]).mapRow(rs, rowNum);
+                            entities[j] = new ClassRowMapper(returnTypes[j]).mapRow(rs, rowNum);
                         }
                         return entities;
                     }catch (EntityObjectNeedsException e){
@@ -74,7 +72,20 @@ public class PreparedTypeMapper implements RowMapper {
                 }
             }
         }
+        //默认返回java map的类型
         return new JavaMapRowMapper(returnTypes).mapRow(rs,rowNum);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PreparedTypeMapper that = (PreparedTypeMapper) o;
+        return Arrays.equals(returnTypes, that.returnTypes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(returnTypes);
+    }
 }

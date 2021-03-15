@@ -1,20 +1,25 @@
 package com.abreaking.easyjpa.dao.impl;
 
+import com.abreaking.easyjpa.exception.EasyJpaException;
+import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
+import com.abreaking.easyjpa.mapper.ClassRowMapper;
+import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
 import com.abreaking.easyjpa.dao.prepare.PreparedMapper;
 import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.CurdTemplate;
-import com.abreaking.easyjpa.dao.EasyJpa;
+import com.abreaking.easyjpa.support.EasyJpa;
 import com.abreaking.easyjpa.dao.EasyJpaDao;
 import com.abreaking.easyjpa.dao.condition.Page;
-import com.abreaking.easyjpa.dao.condition.SqlConst;
-import com.abreaking.easyjpa.dao.prepare.PreparedTypeMapper;
+import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.JavaMapRowMapper;
-import com.abreaking.easyjpa.sql.PlaceHolderSqlBuilder;
-import com.abreaking.easyjpa.sql.PrepareSqlBuilder;
+import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
+import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
+import com.abreaking.easyjpa.sql.ConditionBuilderDelegate;
 
 import java.sql.Connection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +41,12 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
     @Override
     public List query(Object condition) {
         EasyJpa easyJpa = new EasyJpa(condition);
-        return select(easyJpa,easyJpa);
+        return queryByCondition(easyJpa);
+    }
+
+    @Override
+    public <T> List<T> queryByCondition(EasyJpa<T> condition) {
+        return super.select(condition.getTableName(),condition,new ClassRowMapper(condition.getClass()));
     }
 
     /**
@@ -48,27 +58,20 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
     @Override
     public Page queryByPage(EasyJpa easyJpa, Page page) {
         easyJpa.limit(page.getStartRow(),page.getPageSize());
-        List result = query(easyJpa);
+        List result = queryByCondition(easyJpa);
         page.setResult(result);
 
-        // 如果已经设置了select，需要保存下之前的select
-        List<Condition> conditions = easyJpa.getConditions(SqlConst.SELECT);
-        String[] selects = null; //是否已经包含了select
-        if (conditions!=null && !conditions.isEmpty()){
-            Condition condition = conditions.get(0);
-            selects = (String[]) condition.getValues();
-        }
-        // 该条件下的总数
-        easyJpa.remove(SqlConst.LIMIT);
-        easyJpa.select("COUNT(*) counter");
-        List<Map> list = select(easyJpa, new JavaMapRowMapper());
+        // 该条件下的总数,也应该考虑将其缓存
+        String tableName = easyJpa.getTableName();
+        StringBuilder counterBuilder = new StringBuilder("SELECT COUNT(*) counter FROM ");
+        counterBuilder.append(tableName);
+        ColumnMatrix matrix = new AxisColumnMatrix();
+        ConditionBuilderDelegate delegate = new ConditionBuilderDelegate(easyJpa);
+        delegate.visitWhere(counterBuilder,matrix);
+        List<Map> list = doCacheablesSelect(tableName,new PreparedWrapper(counterBuilder.toString(), matrix), new JavaMapRowMapper());
         Map map = list.get(0);
         Long total = (Long) map.get("counter");
         page.setTotal(total);
-
-        if (selects!=null && selects.length!=0){
-            easyJpa.select(selects);
-        }
 
         return page;
     }
@@ -76,66 +79,77 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
     @Override
     public Object get(Class obj, Object idValue) {
         EasyJpa easyJpa = new EasyJpa(obj);
-        easyJpa.and(Condition.equal(easyJpa.getIdName(),idValue));
-        List list = select(easyJpa,easyJpa);
+        String idColumnName = easyJpa.getIdColumnName();
+        if (idColumnName==null){
+            throw new NoIdOrPkSpecifiedException(obj);
+        }
+        easyJpa.and(Condition.equal(idColumnName,idValue));
+        List list = queryByCondition(easyJpa);
         return list.isEmpty()?null:list.get(0);
     }
 
     @Override
     public void update(Object entity) {
-        super.update(new EasyJpa(entity),null);
+        //需要考虑将主键作为条件，进而进行update
+        EasyJpa easyJpa = new EasyJpa(entity);
+        String idColumnName = easyJpa.getIdColumnName();
+        if (idColumnName == null) {
+            throw new NoIdOrPkSpecifiedException(easyJpa.getObj());
+        }
+        super.update(easyJpa.getTableName(),easyJpa.matrix(),sqlConst->{
+            //默认将主键作为修改条件
+            Object value = easyJpa.getValue(idColumnName);
+            if(value==null){
+                throw new EasyJpaException("the object of "+easyJpa.getObj()+" must have id value");
+            }
+            return Collections.singletonList(Condition.equal(idColumnName,value));
+        });
+    }
+
+    public  void updateByCondition(Object entity, Conditions conditions) {
+        EasyJpa easyJpa = new EasyJpa(entity);
+        super.update(easyJpa.getTableName(),easyJpa.matrix(),conditions);
     }
 
 
     @Override
     public void insert(Object entity) {
-        super.insert(new EasyJpa(entity));
     }
 
-    @Override
-    public <T> List<T> queryByCondition(EasyJpa<T> condition) {
-        return select(condition,condition);
-    }
+
 
     @Override
     public List queryByPreparedSql(PreparedMapper prepared, Class...returnType) {
-        return doSelect(new PrepareSqlBuilder(prepared),null,new PreparedTypeMapper(returnType));
+        return null;
     }
 
     @Override
     public List queryByPlaceholderSql(PlaceholderMapper placeholder, Class... returnType) {
-        return doSelect(new PlaceHolderSqlBuilder(placeholder),null,new PreparedTypeMapper(returnType));
+        return null;
     }
 
-    @Override
     public <T> void updateByCondition(T entity, EasyJpa conditions) {
-        update(new EasyJpa(entity),conditions);
+
     }
+
 
     @Override
     public void delete(Object t) {
-        super.delete(new EasyJpa(t));
     }
 
     @Override
     public <T> void deleteById(Class<T> obj, Object id) {
-        EasyJpa easyJpa = new EasyJpa(obj);
-        easyJpa.and(Condition.equal(easyJpa.getIdName(),id));
-        super.delete(easyJpa);
     }
 
     @Override
     public <T> void deleteByCondition(EasyJpa<T> conditions) {
-        super.delete(conditions);
     }
 
     @Override
     public void executePrepareSql(PreparedMapper preparedMapper) {
-        doExecute(new PrepareSqlBuilder(preparedMapper),null);
     }
 
     @Override
     public void executePlaceholderSql(PlaceholderMapper placeholderMapper) {
-        doExecute(new PlaceHolderSqlBuilder((placeholderMapper)),null);
     }
 }

@@ -1,6 +1,6 @@
 package com.abreaking.easyjpa.sql;
 
-import com.abreaking.easyjpa.dao.EasyJpa;
+import com.abreaking.easyjpa.support.EasyJpa;
 import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
 import com.abreaking.easyjpa.exception.EasyJpaException;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
@@ -138,7 +138,7 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
         params.putIfAbsent("tableName",easyJpa.getTableName());
         params.putIfAbsent("tablename".toLowerCase(),easyJpa.getTableName());
         params.put(easyJpa.getObj().getSimpleName(),easyJpa.getTableName()); //类名也可以直接替换成表名
-        params.put("idName",easyJpa.getIdName());
+        //params.put("idName",easyJpa.getIdName());
     }
 
 }

@@ -16,11 +16,17 @@ import java.util.Objects;
 public class Condition {
 
     String fcName;
+
     Integer sqlType ;
+
     String prepare;
+
     Object[] values;
 
-    private Condition(String fcName, String prepare, Object[] values) {
+    public Condition() {
+    }
+
+    public Condition(String fcName, String prepare, Object...values) {
         this.fcName = fcName;
         this.prepare = prepare;
         this.values = values;
@@ -45,10 +51,13 @@ public class Condition {
      * @return
      */
     public static Condition to(String fcName, String operator, Object value) {
+        if (operator.toUpperCase().equals("LIKE")){
+            return like(fcName,String.valueOf(value));
+        }
         if (operator.indexOf("?")==-1){
             operator += " ?";
         }
-        return new Condition(fcName, operator, new Object[]{value});
+        return new Condition(fcName, operator, value);
     }
 
     public static Condition equal(String fcName, Object value) {
@@ -78,24 +87,36 @@ public class Condition {
         return new Condition(fcName, "BETWEEN ? AND ?", new Object[]{s, b});
     }
 
-    public boolean isEmpty(){
-        return this.getFcName() == null && this.getPrepare() == null;
-    }
-
     public String getFcName() {
         return fcName;
+    }
+
+    public void setFcName(String fcName) {
+        this.fcName = fcName;
+    }
+
+    public Integer getSqlType() {
+        return sqlType;
+    }
+
+    public void setSqlType(Integer sqlType) {
+        this.sqlType = sqlType;
     }
 
     public String getPrepare() {
         return prepare;
     }
 
+    public void setPrepare(String prepare) {
+        this.prepare = prepare;
+    }
+
     public Object[] getValues() {
         return values;
     }
 
-    public Integer getSqlType() {
-        return sqlType;
+    public void setValues(Object[] values) {
+        this.values = values;
     }
 
     /**

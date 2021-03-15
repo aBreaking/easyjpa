@@ -1,7 +1,8 @@
 package com.abreaking.easyjpa.sql;
 
 
-import com.abreaking.easyjpa.dao.EasyJpa;
+import com.abreaking.easyjpa.dao.condition.Conditions;
+import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 
 /**
@@ -12,5 +13,5 @@ import com.abreaking.easyjpa.mapper.matrix.Matrix;
  */
 public interface SqlBuilder {
 
-    Matrix visit(EasyJpa easyJpa);
+    PreparedWrapper visit(Conditions conditions);
 }

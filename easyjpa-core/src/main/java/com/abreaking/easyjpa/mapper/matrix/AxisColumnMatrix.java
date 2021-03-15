@@ -1,6 +1,7 @@
 package com.abreaking.easyjpa.mapper.matrix;
 
 
+import java.util.Arrays;
 
 /**
  * 用空间坐标轴的方式来描述ColumnMatrix，想象一下，空间上任意一点我们都可以用x y z三个坐标轴进行描述
@@ -32,12 +33,12 @@ public class AxisColumnMatrix implements ColumnMatrix {
     /**
      * 默认ntv初始大小
      */
-    private static final int DEFAULT_SIZE = 8;
+    private static final int DEFAULT_SIZE = 4;
 
     /**
      * 默认增长速度
      */
-    private static final int DEFAULT_GROUP_UP_RATE = DEFAULT_SIZE>>1;
+    private static final int DEFAULT_GROUP_UP_RATE = 1;
 
     public AxisColumnMatrix(){
         this(DEFAULT_SIZE);
@@ -168,6 +169,19 @@ public class AxisColumnMatrix implements ColumnMatrix {
         }
         s += "]";
         return s;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AxisColumnMatrix that = (AxisColumnMatrix) o;
+        return Arrays.equals(ntv, that.ntv);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(ntv);
     }
 
     /**

@@ -6,6 +6,7 @@ package com.abreaking.easyjpa.dao.prepare;
  * @author liwei_paas
  * @date 2021/1/6
  */
+@Deprecated
 public class PreparedMapper {
 
     private String prepareSql;

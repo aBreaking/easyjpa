@@ -20,4 +20,12 @@ public interface Conditions {
      */
     List<Condition> getConditions(SqlConst sqlConst);
 
+    /**
+     * 判断某个条件是否为空
+     * @return
+     */
+    default boolean isEmpty(SqlConst sqlConst){
+        List<Condition> list = getConditions(sqlConst);
+        return list==null || list.isEmpty();
+    }
 }

@@ -1,11 +1,12 @@
 package com.abreaking.easyjpa.dao;
 
 import com.abreaking.easyjpa.config.EasyJpaConfiguration;
+import com.abreaking.easyjpa.dao.cache.CacheKey;
 import com.abreaking.easyjpa.dao.cache.EjCache;
 import com.abreaking.easyjpa.dao.cache.EjCacheFactory;
 import com.abreaking.easyjpa.dao.condition.Conditions;
+import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
-import com.abreaking.easyjpa.executor.ConnectionHolder;
 import com.abreaking.easyjpa.executor.JdbcSqlExecutor;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.RowMapper;
@@ -14,7 +15,6 @@ import com.abreaking.easyjpa.sql.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,63 +41,62 @@ public class CurdTemplate<T> {
 
     /**
      * 通用的查询，根据条件查询，返回rowMapper封装的对象
-     * @param jpa
+     * @param table
      * @param rowMapper
+     * @param conditions
      * @return
      */
-    public List<T> select(EasyJpa jpa,RowMapper<T> rowMapper) {
-        // 应该在此处进行缓存
-        ConnectionHolder holder = sqlExecutor.getConnectionHolder();
-        try{
-            if (holder.getConnection().getAutoCommit()){
-                return (List<T>) cache.getIfAbsent(jpa,rowMapper,()->doSelect(new SelectSqlBuilder(),jpa,rowMapper));
-            }else{
-                return doSelect(new SelectSqlBuilder(), jpa, rowMapper);
-            }
-        }catch (SQLException e){
-            throw new EasyJpaSqlExecutionException(e);
-        }
-
+    public List<T> select(String table, Conditions conditions,RowMapper<T> rowMapper) {
+        SqlBuilder sqlBuilder = new SelectSqlBuilder(table);
+        PreparedWrapper preparedWrapper = sqlBuilder.visit(conditions);
+        return doCacheablesSelect(table,preparedWrapper,rowMapper);
     }
 
-    public void update(EasyJpa jpa,Conditions conditions){
-        cache.remove(jpa);
-        doExecute(new UpdateSqlBuilder(conditions),jpa);
+    public void update(String table, Matrix updateMatrix, Conditions conditions){
+        SqlBuilder update = new UpdateSqlBuilder(table, updateMatrix);
+        PreparedWrapper preparedWrapper = update.visit(conditions);
+        doExecute(preparedWrapper);
+        cache.remove(table);
     }
 
-    public void insert(EasyJpa jpa) {
-        cache.remove(jpa);
-        doExecute(new InsertSqlBuilder(),jpa);
+    public void insert(String table, Matrix matrix) {
+        cache.remove(table);
     }
 
-    public void delete(EasyJpa jpa){
-        cache.remove(jpa);
-        doExecute(new DeleteSqlBuilder(),jpa);
+    public void delete(String table,Conditions conditions){
+        cache.remove(table);
+    }
+
+    protected List<T> doCacheablesSelect(String table, PreparedWrapper preparedWrapper, RowMapper rowMapper){
+        return (List<T>) cache.hgetOrHputIfAbsent(table,new CacheKey(preparedWrapper,rowMapper),()->doSelect(preparedWrapper,rowMapper));
     }
 
     /**
      * 指定SqlBuilder，easyJpa作为查询条件，组装sql，并执行。最后返回rowMapper的封装对象
-     * @param sqlBuilder
-     * @param easyJpa
+     * @param preparedWrapper sql执行的参数
      * @param rowMapper
      * @return
      */
-    protected List<T> doSelect(SqlBuilder sqlBuilder,EasyJpa easyJpa,RowMapper rowMapper) {
-        Matrix matrix = sqlBuilder.visit(easyJpa);
-        String prepareSql = sqlBuilder.toString();
-
+    protected List<T> doSelect(PreparedWrapper preparedWrapper,RowMapper rowMapper) {
+        String preparedSql = preparedWrapper.getPreparedSql();
+        Matrix matrix = preparedWrapper.getMatrix();
         Object[] values = matrix.values();
         int[] types = matrix.types();
         try {
-            return sqlExecutor.query(prepareSql,values,types,rowMapper);
+            return sqlExecutor.query(preparedSql,values,types,rowMapper);
         }catch (SQLException e){
-            throw new EasyJpaSqlExecutionException(prepareSql,values,e);
+            throw new EasyJpaSqlExecutionException(preparedSql,values,e);
         }
     }
 
-    protected void doExecute(SqlBuilder sqlBuilder,EasyJpa easyJpa){
-        Matrix matrix = sqlBuilder.visit(easyJpa);
-        String prepareSql = sqlBuilder.toString();
+    /**
+     *
+     * @author liwei
+     * @date 2021/3/1
+     */
+    protected void doExecute(PreparedWrapper preparedWrapper){
+        String prepareSql = preparedWrapper.getPreparedSql();
+        Matrix matrix = preparedWrapper.getMatrix();
         Object[] values = matrix.values();
         int[] types = matrix.types();
         try {

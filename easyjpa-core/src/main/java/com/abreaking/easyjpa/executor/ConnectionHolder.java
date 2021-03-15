@@ -1,6 +1,5 @@
 package com.abreaking.easyjpa.executor;
 
-import com.abreaking.easyjpa.dao.EasyJpa;
 import com.abreaking.easyjpa.exception.EasyJpaException;
 
 import java.sql.Connection;
