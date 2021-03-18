@@ -1,5 +1,8 @@
 package com.abreaking.easyjpa.sql;
 
+import com.abreaking.easyjpa.dao.condition.Conditions;
+import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
+import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
 import com.abreaking.easyjpa.support.EasyJpa;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 
@@ -9,13 +12,21 @@ import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
  * @author liwei_paas
  * @date 2020/12/15
  */
-public class DeleteSqlBuilder extends AbstractSqlBuilder{
+public class DeleteSqlBuilder implements SqlBuilder{
 
-    @Override
-    protected void doVisit(EasyJpa easyJpa,ColumnMatrix columnMatrix) {
-        sqlBuilder.append("DELETE FROM ");
-        sqlBuilder.append(easyJpa.getTableName()).append(" ");
-        visitWhere(easyJpa,columnMatrix);
+    String table;
+
+    public DeleteSqlBuilder(String table) {
+        this.table = table;
     }
 
+    @Override
+    public PreparedWrapper visit(Conditions conditions) {
+        StringBuilder sqlBuilder = new StringBuilder("DELETE FROM ");
+        ColumnMatrix matrix = new AxisColumnMatrix();
+        sqlBuilder.append(table);
+        ConditionBuilderDelegate delegate = new ConditionBuilderDelegate(conditions);
+        delegate.visitWhere(sqlBuilder,matrix);
+        return new PreparedWrapper(sqlBuilder.toString(),matrix);
+    }
 }

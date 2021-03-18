@@ -8,20 +8,18 @@ import com.abreaking.easyjpa.util.SqlUtil;
  * @author liwei_paas
  * @date 2021/1/4
  */
-public class MysqlDialectSqlBuilder extends AbstractDialectSqlBuilder{
+public class MysqlDialectSqlBuilder extends DialectSqlBuilder{
 
-    public MysqlDialectSqlBuilder(StringBuilder sqlBuilder) {
-        super(sqlBuilder);
-    }
 
     @Override
-    public void visitPage(ColumnMatrix columnMatrix, int pageStartIndex, int pageSize) {
+    public void visitPage(StringBuilder sqlBuilder,ColumnMatrix columnMatrix, int pageStartIndex, int pageSize) {
+        sqlBuilder.append(" LIMIT ");
         if (pageStartIndex == 0){
-            sqlBuilder.append("LIMIT ?");
+            sqlBuilder.append("?");
         }else{
-            sqlBuilder.append("LIMIT ?,?");
-            columnMatrix.put("pageStartIndex",SqlUtil.getSoftSqlType(Integer.class),pageStartIndex);
+            sqlBuilder.append("?,?");
+            columnMatrix.put("pageStartIndex",SqlUtil.getSqlType(Integer.class),pageStartIndex);
         }
-        columnMatrix.put("pageSize",SqlUtil.getSoftSqlType(Integer.class),pageSize);
+        columnMatrix.put("pageSize",SqlUtil.getSqlType(Integer.class),pageSize);
     }
 }

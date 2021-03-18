@@ -1,5 +1,7 @@
 package com.abreaking.easyjpa.sql;
 
+import com.abreaking.easyjpa.dao.condition.Conditions;
+import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.support.EasyJpa;
 import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
 import com.abreaking.easyjpa.exception.EasyJpaException;
@@ -20,10 +22,9 @@ import java.util.regex.Pattern;
  * @author liwei_paas
  * @date 2020/12/29
  */
-public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
+public class PlaceHolderSqlBuilder implements SqlBuilder{
 
     private static final Pattern pattern = Pattern.compile("(\\$|#)\\{\\w+}");
-
 
     PlaceholderMapper placeholderMapper;
 
@@ -32,26 +33,23 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
     }
 
     @Override
-    protected void doVisit(EasyJpa easyJpa, ColumnMatrix columnMatrix) {
+    public PreparedWrapper visit(Conditions conditions) {
+        StringBuilder sqlBuilder = new StringBuilder();
+        return null;
+    }
+
+    protected void doVisit(StringBuilder sqlBuilder,ColumnMatrix columnMatrix) {
         Map<String, Object> argsMap = placeholderMapper.getArgsMap();
-        Set<Class> entitySet = placeholderMapper.getEntitySet();
         List<PlaceholderMapper.Fragment> fragments = placeholderMapper.getSqlFragmentList();
         if (fragments.isEmpty()){
             throw new EasyJpaException("no placeholder sql statement specified");
         }
 
-        if (easyJpa != null){
-            fillParams(argsMap,easyJpa);
-        }
-        for (Class entity : entitySet){
-            fillParams(argsMap,new EasyJpa(entity));
-        }
-
         //有一种情况，传入的是一条sql
         if (fragments.size()==1){
-            PlaceholderMapper.Fragment fragment = fragments.get(0);
+            String fragmentSql = fragments.get(0).getFragmentSql();
             //一条完整的sql就不再进行notStay判断了
-            sqlBuildIfStay(columnMatrix,fragment.getFragmentSql(),argsMap,key->true);
+            sqlBuildIfStay(sqlBuilder,columnMatrix,fragmentSql,argsMap,key->true);
             return;
         }
 
@@ -64,7 +62,7 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
             if (StringUtils.isNotEmpty(argKey)){
                 if (notStay(argsMap, argKey, rule)) continue;
             }
-            sqlBuildIfStay(columnMatrix,fragmentSql,argsMap,key->{
+            sqlBuildIfStay(sqlBuilder,columnMatrix,fragmentSql,argsMap,key->{
                 if (notStay(argsMap,key,null)){
                     sqlBuilder.delete(sqlBuilderStart,sqlBuilder.length());
                     return false;
@@ -84,7 +82,7 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
      * @param argsMap
      * @param bt
      */
-    private void sqlBuildIfStay(ColumnMatrix columnMatrix, String placeholderFragmentSql, Map<String, Object> argsMap,Function<String,Boolean> bt){
+    private void sqlBuildIfStay(StringBuilder sqlBuilder,ColumnMatrix columnMatrix, String placeholderFragmentSql, Map<String, Object> argsMap,Function<String,Boolean> bt){
         Matcher matcher = pattern.matcher(placeholderFragmentSql);
         int i = 0;
         while (matcher.find()){
@@ -100,8 +98,7 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
                 sqlBuilder.append(value);
             }else{
                 sqlBuilder.append("?");
-                int type = value==null?Types.NULL : SqlUtil.getSoftSqlType(value.getClass());
-                columnMatrix.put(argKey,type,value);
+                columnMatrix.put(argKey,SqlUtil.getSqlTypeByValue(value),value);
             }
             i = matcher.end();
         }
@@ -123,22 +120,11 @@ public class PlaceHolderSqlBuilder extends AbstractSqlBuilder{
             Class<?> type = o.getClass();
             if (type.equals(String.class)) return StringUtils.isEmpty((String)o);
             if (type.isAssignableFrom(Collection.class)) return ((Collection)o).isEmpty();
-            return o == rule || o.equals(rule);
+            return o.equals(rule);
         }
         return true;
     }
 
-    /**
-     * 将easyJpa里的部分映射内容，填充到params里面(params里不存在的)
-     * 也应该可以直接字段名的补充的。后续再实现把
-     * @param params
-     * @param easyJpa
-     */
-    public void fillParams(Map<String,Object> params,EasyJpa easyJpa){
-        params.putIfAbsent("tableName",easyJpa.getTableName());
-        params.putIfAbsent("tablename".toLowerCase(),easyJpa.getTableName());
-        params.put(easyJpa.getObj().getSimpleName(),easyJpa.getTableName()); //类名也可以直接替换成表名
-        //params.put("idName",easyJpa.getIdName());
-    }
+
 
 }

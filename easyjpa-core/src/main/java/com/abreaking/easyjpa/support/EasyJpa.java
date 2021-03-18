@@ -113,6 +113,10 @@ public final class EasyJpa<T> implements Conditions,MatrixMapper {
         addCondition(SqlConst.OR,condition);
     }
 
+    public void orderBy(String fieldNameOrColumnName){
+        orderBy(fieldNameOrColumnName,true);
+    }
+
     public void orderBy(String fieldNameOrColumnName,Boolean asc){
         addCondition(SqlConst.ORDER_BY,Condition.to(fieldNameOrColumnName, "ORDER BY", asc ? "ASC" : "DESC"));
     }

@@ -15,6 +15,7 @@ import com.abreaking.easyjpa.sql.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -60,15 +61,21 @@ public class CurdTemplate<T> {
     }
 
     public void insert(String table, Matrix matrix) {
+        SqlBuilder sqlBuilder = new InsertSqlBuilder(table,matrix);
+        doExecute(sqlBuilder.visit(null));
         cache.remove(table);
     }
 
     public void delete(String table,Conditions conditions){
+        SqlBuilder sqlBuilder = new DeleteSqlBuilder(table);
+        PreparedWrapper preparedWrapper = sqlBuilder.visit(conditions);
+        doExecute(preparedWrapper);
         cache.remove(table);
     }
 
     protected List<T> doCacheablesSelect(String table, PreparedWrapper preparedWrapper, RowMapper rowMapper){
-        return (List<T>) cache.hgetOrHputIfAbsent(table,new CacheKey(preparedWrapper,rowMapper),()->doSelect(preparedWrapper,rowMapper));
+        CacheKey cacheKey = new CacheKey(preparedWrapper, rowMapper);
+        return (List<T>) cache.hgetOrHputIfAbsent(table,cacheKey,()->doSelect(preparedWrapper,rowMapper));
     }
 
     /**
@@ -79,9 +86,8 @@ public class CurdTemplate<T> {
      */
     protected List<T> doSelect(PreparedWrapper preparedWrapper,RowMapper rowMapper) {
         String preparedSql = preparedWrapper.getPreparedSql();
-        Matrix matrix = preparedWrapper.getMatrix();
-        Object[] values = matrix.values();
-        int[] types = matrix.types();
+        Object[] values = preparedWrapper.getValues();
+        int[] types = preparedWrapper.getTypes();
         try {
             return sqlExecutor.query(preparedSql,values,types,rowMapper);
         }catch (SQLException e){
@@ -96,9 +102,8 @@ public class CurdTemplate<T> {
      */
     protected void doExecute(PreparedWrapper preparedWrapper){
         String prepareSql = preparedWrapper.getPreparedSql();
-        Matrix matrix = preparedWrapper.getMatrix();
-        Object[] values = matrix.values();
-        int[] types = matrix.types();
+        Object[] values = preparedWrapper.getValues();
+        int[] types = preparedWrapper.getTypes();
         try {
             sqlExecutor.execute(prepareSql,values,types);
         } catch (SQLException e) {

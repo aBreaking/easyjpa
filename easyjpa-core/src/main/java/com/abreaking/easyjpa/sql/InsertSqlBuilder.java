@@ -1,5 +1,7 @@
 package com.abreaking.easyjpa.sql;
 
+import com.abreaking.easyjpa.dao.condition.Conditions;
+import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.support.EasyJpa;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
@@ -11,15 +13,22 @@ import com.abreaking.easyjpa.util.StringUtils;
  * @author liwei_paas
  * @date 2020/12/15
  */
-public class InsertSqlBuilder extends AbstractSqlBuilder{
+public class InsertSqlBuilder implements SqlBuilder{
+
+    String table;
+
+    Matrix matrix;
+
+    public InsertSqlBuilder(String table, Matrix matrix2Insert) {
+        this.table = table;
+        this.matrix = matrix2Insert;
+    }
 
     @Override
-    protected void doVisit(EasyJpa easyJpa,ColumnMatrix columnMatrix) {
-        sqlBuilder.append("INSERT INTO ");
-        sqlBuilder.append(easyJpa.getTableName());
+    public PreparedWrapper visit(Conditions conditions) {
+        StringBuilder sqlBuilder = new StringBuilder("INSERT INTO ");
+        sqlBuilder.append(table);
         sqlBuilder.append("(");
-
-        Matrix matrix = easyJpa.matrix();
         String[] columns = matrix.columns();
         for (String  column : columns){
             sqlBuilder.append(column);
@@ -32,8 +41,7 @@ public class InsertSqlBuilder extends AbstractSqlBuilder{
         }
         StringUtils.cutAtLastSeparator(sqlBuilder,",");
         sqlBuilder.append(")");
-        columnMatrix.putAll(matrix);
+        return new PreparedWrapper(sqlBuilder.toString(),matrix);
     }
-
 
 }

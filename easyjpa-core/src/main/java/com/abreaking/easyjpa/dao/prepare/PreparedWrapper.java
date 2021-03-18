@@ -1,6 +1,8 @@
 package com.abreaking.easyjpa.dao.prepare;
 
+
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
+import com.abreaking.easyjpa.util.SqlUtil;
 
 /**
  * 预处理的sql及其参数封装
@@ -9,13 +11,34 @@ import com.abreaking.easyjpa.mapper.matrix.Matrix;
  */
 public class PreparedWrapper {
 
-    String preparedSql; //预处理的sql语句
+    private String preparedSql; //预处理的sql语句
 
-    Matrix matrix;  //sql里的参数
+    private Object[] values; //sql里的参数值
+
+    private int[] types; //参数类型
+
+    public PreparedWrapper() {
+    }
+
+    public PreparedWrapper(String preparedSql, Object[] args, int[] types) {
+        this.preparedSql = preparedSql;
+        this.values = args;
+        this.types = types;
+    }
+
+    public PreparedWrapper(String preparedSql, Object...args) {
+        this.preparedSql = preparedSql;
+        this.values = args;
+        this.types = new int[args.length];
+        for (int i = 0; i < args.length; i++) {
+            types[i] = SqlUtil.getSqlTypeByValue(args[i]);
+        }
+    }
 
     public PreparedWrapper(String preparedSql, Matrix matrix) {
         this.preparedSql = preparedSql;
-        this.matrix = matrix;
+        this.values = matrix.values();
+        this.types = matrix.types();
     }
 
     public String getPreparedSql() {
@@ -26,11 +49,19 @@ public class PreparedWrapper {
         this.preparedSql = preparedSql;
     }
 
-    public Matrix getMatrix() {
-        return matrix;
+    public Object[] getValues() {
+        return values;
     }
 
-    public void setMatrix(Matrix matrix) {
-        this.matrix = matrix;
+    public void setValues(Object[] values) {
+        this.values = values;
+    }
+
+    public int[] getTypes() {
+        return types;
+    }
+
+    public void setTypes(int[] types) {
+        this.types = types;
     }
 }

@@ -4,10 +4,12 @@ import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.SqlConst;
 import com.abreaking.easyjpa.mapper.MatrixMapper;
-import com.abreaking.easyjpa.mapper.RowMapper;
+import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
+import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
+import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.StringUtils;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,40 +17,28 @@ import java.util.Map;
  * @author liwei
  * @date 2021/3/12
  */
-public class EasyMapJpa implements EasyExecutable {
+public class EasyMapJpa implements MatrixMapper,Conditions {
 
-    Map<String,Object> map = new HashMap<>();
+    String tableName;
 
-    public EasyMapJpa(Map<String, Object> map) {
-        this.map = map;
+    ColumnMatrix matrix;
+
+    public EasyMapJpa(Map<String, Object> map){
+        this(map,false);
     }
 
-    public List<Condition> getConditions(SqlConst sqlConst) {
-        if (sqlConst.equals(SqlConst.AND)){
-            map.forEach((k,v)->{
-
-            });
-        }
-        return null;
+    public EasyMapJpa(Map<String, Object> map,Boolean formatKey2Column) {
+        this.matrix = new AxisColumnMatrix(map.size());
+        map.forEach((k,v)->matrix.put(formatKey2Column?StringUtils.underscoreName(k):k,SqlUtil.getSqlType(v.getClass()),v));
     }
 
     @Override
-    public Selectable select() {
-        return new Selectable() {
-            @Override
-            public String table() {
-                return null;
-            }
+    public Matrix matrix() {
+        return matrix;
+    }
 
-            @Override
-            public Conditions conditions() {
-                return null;
-            }
-
-            @Override
-            public RowMapper rowMap() {
-                return null;
-            }
-        };
+    @Override
+    public List<Condition> getConditions(SqlConst sqlConst) {
+        return null;
     }
 }

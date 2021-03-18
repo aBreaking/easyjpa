@@ -12,22 +12,24 @@ import java.util.function.Supplier;
  */
 public class LruEjCache  implements EjCache{
 
+    private static final int DEFAULT_MAX_BUCKETS_NUMBER = 16;
+    private static final int DEFAULT_MAX_BUCKETS_SIZE = 32;
 
     /**
      * 最多有几个桶
      */
-    private int maxBucketNumber = 16;
+    private int maxBucketNumber;
 
     /**
      * 每个桶最大容量
      * 目前该最大容量指每个buket的最大容量，应该考虑是总的cache最大容量
      */
-    private int maxBucketSize = 32;
+    private int maxBucketSize;
 
     /**
      * 缓存总的大小，后续应该将其智能，自动管理所有的桶
      */
-    private int maxCacheSize = maxBucketSize * maxBucketNumber;
+    private int maxCacheSize ;
 
     /**
      * 缓存，也是一个链表，用于记录最早没用的cache
@@ -42,6 +44,7 @@ public class LruEjCache  implements EjCache{
     final Lock writeLock = lock.writeLock();
 
     public LruEjCache() {
+        this(DEFAULT_MAX_BUCKETS_NUMBER,DEFAULT_MAX_BUCKETS_SIZE);
     }
 
     public LruEjCache(int maxBucketNumber, int maxBucketSize) {

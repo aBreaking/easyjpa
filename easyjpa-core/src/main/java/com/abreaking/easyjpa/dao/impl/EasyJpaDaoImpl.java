@@ -1,11 +1,10 @@
 package com.abreaking.easyjpa.dao.impl;
 
+import com.abreaking.easyjpa.dao.condition.SqlConst;
 import com.abreaking.easyjpa.exception.EasyJpaException;
 import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
 import com.abreaking.easyjpa.mapper.ClassRowMapper;
 import com.abreaking.easyjpa.dao.condition.Conditions;
-import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
-import com.abreaking.easyjpa.dao.prepare.PreparedMapper;
 import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.CurdTemplate;
 import com.abreaking.easyjpa.support.EasyJpa;
@@ -46,7 +45,7 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
 
     @Override
     public <T> List<T> queryByCondition(EasyJpa<T> condition) {
-        return super.select(condition.getTableName(),condition,new ClassRowMapper(condition.getClass()));
+        return super.select(condition.getTableName(),condition,new ClassRowMapper(condition.getObj()));
     }
 
     /**
@@ -57,6 +56,7 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
      */
     @Override
     public Page queryByPage(EasyJpa easyJpa, Page page) {
+
         easyJpa.limit(page.getStartRow(),page.getPageSize());
         List result = queryByCondition(easyJpa);
         page.setResult(result);
@@ -102,7 +102,7 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
             if(value==null){
                 throw new EasyJpaException("the object of "+easyJpa.getObj()+" must have id value");
             }
-            return Collections.singletonList(Condition.equal(idColumnName,value));
+            return sqlConst==SqlConst.AND ? Collections.singletonList(Condition.equal(idColumnName,value)):null;
         });
     }
 
@@ -114,42 +114,19 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
 
     @Override
     public void insert(Object entity) {
+        EasyJpa easyJpa = new EasyJpa(entity);
+        super.insert(easyJpa.getTableName(),easyJpa.matrix());
     }
 
-
-
-    @Override
-    public List queryByPreparedSql(PreparedMapper prepared, Class...returnType) {
-        return null;
-    }
-
-    @Override
-    public List queryByPlaceholderSql(PlaceholderMapper placeholder, Class... returnType) {
-        return null;
-    }
-
-    public <T> void updateByCondition(T entity, EasyJpa conditions) {
-
-    }
-
-
-    @Override
-    public void delete(Object t) {
-    }
 
     @Override
     public <T> void deleteById(Class<T> obj, Object id) {
+        EasyJpa easyJpa = new EasyJpa(obj);
+        super.delete(easyJpa.getTableName(),(sqlConst)->Collections.singletonList(Condition.equal(easyJpa.getIdColumnName(),id)));
     }
 
     @Override
     public <T> void deleteByCondition(EasyJpa<T> conditions) {
-    }
-
-    @Override
-    public void executePrepareSql(PreparedMapper preparedMapper) {
-    }
-
-    @Override
-    public void executePlaceholderSql(PlaceholderMapper placeholderMapper) {
+        super.delete(conditions.getTableName(),conditions);
     }
 }

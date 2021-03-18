@@ -2,8 +2,6 @@ package com.abreaking.easyjpa.dao;
 
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.Page;
-import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
-import com.abreaking.easyjpa.dao.prepare.PreparedMapper;
 import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
 import com.abreaking.easyjpa.support.EasyJpa;
 
@@ -43,21 +41,6 @@ public interface EasyJpaDao {
     <T> List<T> queryByCondition(EasyJpa<T> condition);
 
     /**
-     * 预处理的sql查询
-     * @param prepared
-     * @return
-     */
-    List queryByPreparedSql(PreparedMapper prepared,Class...returnType);
-
-    /**
-     * 占位符sql查询
-     * @param placeholder
-     * @param returnType
-     * @return
-     */
-    List queryByPlaceholderSql(PlaceholderMapper placeholder,Class...returnType);
-
-    /**
      * 统一封装的分页查询。
      * 与EasyJpa里自带的limit orderby 分页方法不同的是，Page封装了返回可直接与前端交互的查询结果，包括分页结果、总页数、总记录数等。
      *  而单独使用EasyJpa进行的条件查询只返回分页结果
@@ -86,13 +69,6 @@ public interface EasyJpaDao {
     <T> void updateByCondition(T entity,Conditions conditions);
 
     /**
-     * 根据实体的数据删除对应的记录
-     * @param entity
-     * @param <T>
-     */
-    <T> void delete(T entity);
-
-    /**
      * 根据主键删除对象，目前只能根据之间来进行删除
      * @param obj
      * @param id
@@ -114,7 +90,4 @@ public interface EasyJpaDao {
      */
     <T> void insert(T entity);
 
-    void executePrepareSql(PreparedMapper preparedMapper);
-
-    void executePlaceholderSql(PlaceholderMapper placeholderMapper);
 }

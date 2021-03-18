@@ -15,13 +15,13 @@ import java.util.Objects;
  */
 public class Condition {
 
-    String fcName;
+    String fcName; //列名,easyjpa也支持字段名
 
-    Integer sqlType ;
+    Integer sqlType ; //列类型
 
-    String prepare;
+    String prepare; //操作符预处理语句，比如 =? 、 like ? 、 in (?,?)
 
-    Object[] values;
+    Object[] values; // 对应的值
 
     public Condition() {
     }

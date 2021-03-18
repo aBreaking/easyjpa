@@ -36,13 +36,14 @@ public class UpdateSqlBuilder implements SqlBuilder{
         for (String column : columns){
             sqlBuilder.append(column);
             sqlBuilder.append("= ?,");
-            columnMatrix.putAll(matrix);
         }
+        columnMatrix.putAll(matrix);
+
         StringUtils.cutAtLastSeparator(sqlBuilder,",");
 
         ConditionBuilderDelegate delegate = new ConditionBuilderDelegate(conditions);
 
-        delegate.visitAnd(sqlBuilder,columnMatrix);
+        delegate.visitWhere(sqlBuilder,columnMatrix);
 
         return new PreparedWrapper(sqlBuilder.toString(),columnMatrix);
     }

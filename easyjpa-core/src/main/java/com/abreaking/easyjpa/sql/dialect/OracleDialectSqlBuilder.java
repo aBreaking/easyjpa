@@ -9,18 +9,15 @@ import com.abreaking.easyjpa.util.SqlUtil;
  * @author liwei_paas
  * @date 2021/1/4
  */
-public class OracleDialectSqlBuilder extends AbstractDialectSqlBuilder{
-    public OracleDialectSqlBuilder(StringBuilder sqlBuilder) {
-        super(sqlBuilder);
-    }
+public class OracleDialectSqlBuilder extends DialectSqlBuilder{
 
     @Override
-    public void visitPage(ColumnMatrix columnMatrix, int pageStartIndex, int pageSize) {
+    public void visitPage(StringBuilder sqlBuilder,ColumnMatrix columnMatrix, int pageStartIndex, int pageSize) {
         int rowStart = pageStartIndex;
         int rowEnd = pageSize+rowStart;
         sqlBuilder.insert(0,"SELECT * FROM (SELECT ej_tmp.*, ROWNUM ej_rowStart FROM ( ");
         sqlBuilder.append(" ) ej_tmp WHERE ROWNUM <= ?) WHERE ej_rowStart >= ?");
-        columnMatrix.put("rowEnd",SqlUtil.getSoftSqlType(Integer.class),rowEnd);
-        columnMatrix.put("rowStart",SqlUtil.getSoftSqlType(Integer.class),rowStart);
+        columnMatrix.put("rowEnd",SqlUtil.getSqlType(Integer.class),rowEnd);
+        columnMatrix.put("rowStart",SqlUtil.getSqlType(Integer.class),rowStart);
     }
 }

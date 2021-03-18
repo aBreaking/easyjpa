@@ -14,6 +14,13 @@ import java.util.Date;
  */
 public class SqlUtil {
 
+    public static int getSqlTypeByValue(Object value){
+        if (value==null){
+            return Types.NULL;
+        }
+        return getSqlType(value.getClass());
+    }
+
     /**
      * 根据java的字段类型转sql的字段类型
      * @param fieldType

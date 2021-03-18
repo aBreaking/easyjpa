@@ -31,31 +31,14 @@ public class SelectSqlBuilder implements SqlBuilder{
 
         delegate.visitSelect(sqlBuilder);
 
-        sqlBuilder.append("FROM ").append(table).append(" ");
+        sqlBuilder.append(" FROM ").append(table).append(" ");
 
         delegate.visitWhere(sqlBuilder,columnMatrix);
 
         delegate.visitOrderBy(sqlBuilder);
 
-        delegate.visitPagination(sqlBuilder);
+        delegate.visitPagination(sqlBuilder,columnMatrix);
 
         return new PreparedWrapper(sqlBuilder.toString(),columnMatrix);
     }
-
-    public PreparedWrapper visitCount(Conditions conditions){
-        StringBuilder sqlBuilder = new StringBuilder();
-
-        ColumnMatrix columnMatrix = MatrixFactory.createColumnMatrix();
-
-        sqlBuilder.append("SELECT count(*) counter ").append(table).append(" ");
-
-        new ConditionBuilderDelegate(conditions).visitWhere(sqlBuilder,columnMatrix);
-
-        return new PreparedWrapper(sqlBuilder.toString(),columnMatrix);
-    }
-
-
-
-
-
 }
