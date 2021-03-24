@@ -63,12 +63,16 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
 
         // 该条件下的总数,也应该考虑将其缓存
         String tableName = easyJpa.getTableName();
-        StringBuilder counterBuilder = new StringBuilder("SELECT COUNT(*) counter FROM ");
-        counterBuilder.append(tableName);
-        ColumnMatrix matrix = new AxisColumnMatrix();
-        ConditionBuilderDelegate delegate = new ConditionBuilderDelegate(easyJpa);
-        delegate.visitWhere(counterBuilder,matrix);
-        List<Map> list = doCacheablesSelect(tableName,new PreparedWrapper(counterBuilder.toString(), matrix), new JavaMapRowMapper());
+
+        List<Map> list = doCachesSelect(tableName,new JavaMapRowMapper(),()->{
+            StringBuilder counterBuilder = new StringBuilder("SELECT COUNT(*) counter FROM ");
+            counterBuilder.append(tableName);
+            ColumnMatrix matrix = new AxisColumnMatrix();
+            ConditionBuilderDelegate delegate = new ConditionBuilderDelegate(easyJpa);
+            delegate.visitWhere(counterBuilder,matrix);
+            return new PreparedWrapper(counterBuilder.toString(), matrix);
+        });
+
         Map map = list.get(0);
         Long total = (Long) map.get("counter");
         page.setTotal(total);

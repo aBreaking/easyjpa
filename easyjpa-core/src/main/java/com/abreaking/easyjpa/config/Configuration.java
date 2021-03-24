@@ -7,7 +7,6 @@ package com.abreaking.easyjpa.config;
  */
 public enum Configuration {
 
-    dialect("mysql"), // 方言默认为mysql，目前暂时支持Mysql与oracle
     cache("lru"),
     cache_lru_max_size("128"),
     ;

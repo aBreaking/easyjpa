@@ -1,12 +1,12 @@
 package com.abreaking.easyjpa.dao;
 
-import com.abreaking.easyjpa.config.EasyJpaConfiguration;
-import com.abreaking.easyjpa.dao.cache.CacheKey;
 import com.abreaking.easyjpa.dao.cache.EjCache;
 import com.abreaking.easyjpa.dao.cache.EjCacheFactory;
+import com.abreaking.easyjpa.dao.cache.SelectKey;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
+import com.abreaking.easyjpa.executor.ConnectionHolder;
 import com.abreaking.easyjpa.executor.JdbcSqlExecutor;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.RowMapper;
@@ -15,28 +15,24 @@ import com.abreaking.easyjpa.sql.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * 通用增删改查的模板
- * 它提供了增删改查的通用方法，以及封装了sql的执行过程。它一般由子类去实现，并且其子类应该被使用成单例模式。
+ * 它提供了增删改查的通用方法，以及封装了sql的执行过程
  * @author liwei_paas
  * @date 2020/12/13
  */
-public class CurdTemplate<T> {
+public class CurdTemplate {
 
     protected SqlExecutor sqlExecutor;
 
-    protected EjCache cache;
-
     public CurdTemplate(SqlExecutor sqlExecutor) {
         this.sqlExecutor = sqlExecutor;
-        this.cache = EjCacheFactory.getDefaultCache(sqlExecutor);
-        EasyJpaConfiguration.setDialectWithConnection(sqlExecutor.getConnectionHolder());
     }
 
-    public CurdTemplate(Connection connection){
+    public CurdTemplate(Connection connection) {
         this(new JdbcSqlExecutor(connection));
     }
 
@@ -47,44 +43,27 @@ public class CurdTemplate<T> {
      * @param conditions
      * @return
      */
-    public List<T> select(String table, Conditions conditions,RowMapper<T> rowMapper) {
-        SqlBuilder sqlBuilder = new SelectSqlBuilder(table);
-        PreparedWrapper preparedWrapper = sqlBuilder.visit(conditions);
-        return doCacheablesSelect(table,preparedWrapper,rowMapper);
+    public <T> List<T> select(String table, Conditions conditions,RowMapper<T> rowMapper) {
+        SelectSqlBuilder sqlBuilder = new SelectSqlBuilder(table);
+        return doCachesSelect(table,rowMapper,()->sqlBuilder.visit(conditions));
     }
 
     public void update(String table, Matrix updateMatrix, Conditions conditions){
         SqlBuilder update = new UpdateSqlBuilder(table, updateMatrix);
-        PreparedWrapper preparedWrapper = update.visit(conditions);
-        doExecute(preparedWrapper);
-        cache.remove(table);
+        doExecute(table,()->update.visit(conditions));
     }
 
     public void insert(String table, Matrix matrix) {
-        SqlBuilder sqlBuilder = new InsertSqlBuilder(table,matrix);
-        doExecute(sqlBuilder.visit(null));
-        cache.remove(table);
+        SqlBuilder insert = new InsertSqlBuilder(table,matrix);
+        doExecute(table,()->insert.visit(null));
     }
 
     public void delete(String table,Conditions conditions){
-        SqlBuilder sqlBuilder = new DeleteSqlBuilder(table);
-        PreparedWrapper preparedWrapper = sqlBuilder.visit(conditions);
-        doExecute(preparedWrapper);
-        cache.remove(table);
+        SqlBuilder delete = new DeleteSqlBuilder(table);
+        doExecute(table,()->delete.visit(conditions));
     }
 
-    protected List<T> doCacheablesSelect(String table, PreparedWrapper preparedWrapper, RowMapper rowMapper){
-        CacheKey cacheKey = new CacheKey(preparedWrapper, rowMapper);
-        return (List<T>) cache.hgetOrHputIfAbsent(table,cacheKey,()->doSelect(preparedWrapper,rowMapper));
-    }
-
-    /**
-     * 指定SqlBuilder，easyJpa作为查询条件，组装sql，并执行。最后返回rowMapper的封装对象
-     * @param preparedWrapper sql执行的参数
-     * @param rowMapper
-     * @return
-     */
-    protected List<T> doSelect(PreparedWrapper preparedWrapper,RowMapper rowMapper) {
+    protected List doSelect(RowMapper rowMapper,PreparedWrapper preparedWrapper){
         String preparedSql = preparedWrapper.getPreparedSql();
         Object[] values = preparedWrapper.getValues();
         int[] types = preparedWrapper.getTypes();
@@ -95,19 +74,46 @@ public class CurdTemplate<T> {
         }
     }
 
-    /**
-     *
-     * @author liwei
-     * @date 2021/3/1
-     */
+    protected List doCachesSelect(String tableName,RowMapper rowMapper,Supplier<PreparedWrapper> supplier){
+        ConnectionHolder.setLocalConnection(sqlExecutor.getConnection());
+        PreparedWrapper preparedWrapper = supplier.get();
+        EjCache defaultCache = EjCacheFactory.getLocalDefaultCache();
+        SelectKey selectKey = new SelectKey(preparedWrapper, rowMapper);
+        List result = (List) defaultCache.hget(tableName, selectKey);
+        try{
+            if (result==null){
+                result = doSelect(rowMapper,preparedWrapper);
+                defaultCache.hput(tableName,selectKey,result);
+            }
+        }finally {
+            ConnectionHolder.removeLocalConnection();
+        }
+        return result;
+    }
+
     protected void doExecute(PreparedWrapper preparedWrapper){
-        String prepareSql = preparedWrapper.getPreparedSql();
+        String preparedSql = preparedWrapper.getPreparedSql();
         Object[] values = preparedWrapper.getValues();
         int[] types = preparedWrapper.getTypes();
         try {
-            sqlExecutor.execute(prepareSql,values,types);
-        } catch (SQLException e) {
-            throw new EasyJpaSqlExecutionException(prepareSql,values,e);
+            sqlExecutor.execute(preparedSql,values,types);
+        }catch (SQLException e){
+            throw new EasyJpaSqlExecutionException(preparedSql,values,e);
         }
     }
+
+    protected void doExecute(String tableName,Supplier<PreparedWrapper> supplier){
+        ConnectionHolder.setLocalConnection(sqlExecutor.getConnection());
+        PreparedWrapper preparedWrapper = supplier.get();
+        EjCache defaultCache = EjCacheFactory.getLocalDefaultCache();
+        try{
+            doExecute(preparedWrapper);
+            defaultCache.remove(tableName);
+        }finally {
+            ConnectionHolder.removeLocalConnection();
+        }
+
+    }
+
+
 }

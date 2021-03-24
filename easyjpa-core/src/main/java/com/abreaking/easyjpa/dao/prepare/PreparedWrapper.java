@@ -4,6 +4,8 @@ package com.abreaking.easyjpa.dao.prepare;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.util.SqlUtil;
 
+import java.util.Arrays;
+
 /**
  * 预处理的sql及其参数封装
  * @author liwei
@@ -63,5 +65,14 @@ public class PreparedWrapper {
 
     public void setTypes(int[] types) {
         this.types = types;
+    }
+
+    @Override
+    public String toString() {
+        return "PreparedSql{" +
+                "preparedSql='" + preparedSql + '\'' +
+                ", values=" + Arrays.toString(values) +
+                ", types=" + Arrays.toString(types) +
+                '}';
     }
 }

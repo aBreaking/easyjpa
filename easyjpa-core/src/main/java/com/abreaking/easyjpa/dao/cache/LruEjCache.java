@@ -55,7 +55,7 @@ public class LruEjCache  implements EjCache{
     }
 
     @Override
-    public void hput(String bucket, CacheKey key, Object value) {
+    public void hput(String bucket, SelectKey key, Object value) {
         if (bucket==null){
             throw new NullPointerException(bucket);
         }
@@ -84,7 +84,7 @@ public class LruEjCache  implements EjCache{
     }
 
     @Override
-    public Object hget(String bucket, CacheKey key) {
+    public Object hget(String bucket, SelectKey key) {
         if (cache.containsKey(bucket)){
             return bucketGet(bucket,key);
         }else{
@@ -107,7 +107,7 @@ public class LruEjCache  implements EjCache{
     }
 
     @Override
-    public Object hgetOrHputIfAbsent(String bucket, CacheKey key, Supplier supplier) {
+    public Object hgetOrHputIfAbsent(String bucket, SelectKey key, Supplier supplier) {
         if (cache.containsKey(bucket)){
             Bucket b = cache.get(bucket);
             readLock.lock();
@@ -139,7 +139,7 @@ public class LruEjCache  implements EjCache{
         return cache.get(bucket).get(key);
     }
 
-    private Object bucketGet(String bucket,CacheKey key){
+    private Object bucketGet(String bucket,SelectKey key){
         Bucket b = cache.get(bucket);
         if (b==null){
             return null;
@@ -152,7 +152,7 @@ public class LruEjCache  implements EjCache{
         }
     }
 
-    private void lruPut(Bucket bucket,CacheKey key , Object value){
+    private void lruPut(Bucket bucket, SelectKey key , Object value){
         bucket.put(key,value);
     }
 

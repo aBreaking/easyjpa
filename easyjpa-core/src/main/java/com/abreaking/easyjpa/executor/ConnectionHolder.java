@@ -3,55 +3,32 @@ package com.abreaking.easyjpa.executor;
 import com.abreaking.easyjpa.exception.EasyJpaException;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 /**
- * 包装jdbc的connection
- * @author liwei_paas
- * @date 2021/1/13
+ *
+ * @author liwei
+ * @date 2021/3/19
  */
 public class ConnectionHolder {
 
-    private Connection connection;
+    private static final ThreadLocal<ConnectionWrapper> HOLDER_CONNECTION_LOCAL = new ThreadLocal();
 
-    private DatabaseMetaData metaData;
-
-    private String jdbcUrl ;
-    private String jdbcUserName ;
-    private String jdbcDriverName ;
-
-
-    public ConnectionHolder(Connection connection) {
-        this.connection = connection;
-        try{
-            this.metaData = connection.getMetaData();
-            this.jdbcUrl = metaData.getURL();
-            this.jdbcUserName = metaData.getUserName();
-            this.jdbcDriverName = metaData.getDriverName();
-        }catch (SQLException e){
+    public static void setLocalConnection(Connection connection){
+        try {
+            ConnectionWrapper connectionWrapper = new ConnectionWrapper(connection);
+            HOLDER_CONNECTION_LOCAL.set(connectionWrapper);
+        } catch (SQLException e) {
             throw new EasyJpaException(e);
         }
-
     }
 
-    public Connection getConnection() {
-        return connection;
+    public static ConnectionWrapper getLocalConnection(){
+        return HOLDER_CONNECTION_LOCAL.get();
     }
 
-    public DatabaseMetaData getMetaData() {
-        return metaData;
+    public static void removeLocalConnection(){
+        HOLDER_CONNECTION_LOCAL.remove();
     }
 
-    public String getJdbcUrl() {
-        return jdbcUrl;
-    }
-
-    public String getJdbcUserName() {
-        return jdbcUserName;
-    }
-
-    public String getJdbcDriverName() {
-        return jdbcDriverName;
-    }
 }

@@ -10,12 +10,12 @@ import java.util.function.Supplier;
  */
 public interface EjCache<V> {
 
-    void hput(String bucket,CacheKey key,Object value);
+    void hput(String bucket, SelectKey key, Object value);
 
-    Object hget(String bucket,CacheKey key);
+    Object hget(String bucket,SelectKey key);
 
     void remove(String bucket);
 
-    Object hgetOrHputIfAbsent(String bucket, CacheKey key, Supplier<Object> supplier);
+    Object hgetOrHputIfAbsent(String bucket, SelectKey key, Supplier<Object> supplier);
 
 }

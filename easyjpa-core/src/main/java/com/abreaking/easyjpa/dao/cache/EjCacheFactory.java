@@ -1,8 +1,7 @@
 package com.abreaking.easyjpa.dao.cache;
 
-import com.abreaking.easyjpa.config.Configuration;
 import com.abreaking.easyjpa.executor.ConnectionHolder;
-import com.abreaking.easyjpa.executor.SqlExecutor;
+import com.abreaking.easyjpa.executor.ConnectionWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,29 +13,17 @@ import java.util.Map;
  */
 public class EjCacheFactory {
 
-    private static final Map<String,EjCache> CACHE_MAP = new HashMap<>();
+    private static final Map<ConnectionWrapper,EjCache> CACHE_MAP = new HashMap<>();
 
-    public static EjCache getDefaultCache(SqlExecutor sqlExecutor){
-        String key = key(sqlExecutor);
-        if (!CACHE_MAP.containsKey(key)){
+    public static EjCache getLocalDefaultCache(){
+        ConnectionWrapper connectionWrapper = ConnectionHolder.getLocalConnection();
+        if (!CACHE_MAP.containsKey(connectionWrapper)){
             synchronized (CACHE_MAP){
-                if (!CACHE_MAP.containsKey(key)){
-                    CACHE_MAP.put(key,new LruEjCache());
+                if (!CACHE_MAP.containsKey(connectionWrapper)){
+                    CACHE_MAP.put(connectionWrapper,new LruEjCache());
                 }
             }
         }
-        return CACHE_MAP.get(key);
+        return CACHE_MAP.get(connectionWrapper);
     }
-
-    private static String key(SqlExecutor sqlExecutor){
-        ConnectionHolder holder = sqlExecutor.getConnectionHolder();
-        if (holder != null){
-            String keyPrefix = sqlExecutor.getClass().getName();
-            return keyPrefix+holder.getJdbcUrl()+holder.getJdbcUserName()+holder.getJdbcDriverName();
-        }
-        return sqlExecutor.toString();
-
-
-    }
-
 }

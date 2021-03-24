@@ -1,6 +1,7 @@
 package com.abreaking.easyjpa.sql.dialect;
 
-import com.abreaking.easyjpa.config.Configuration;
+import com.abreaking.easyjpa.executor.ConnectionHolder;
+import com.abreaking.easyjpa.executor.ConnectionWrapper;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 
 import java.util.HashMap;
@@ -37,7 +38,8 @@ public class DialectSqlBuilder {
 
 
     public static DialectSqlBuilder getDefaultDialectSqlBuilder(){
-        String config = Configuration.dialect.getConfig();
+        ConnectionWrapper localConnection = ConnectionHolder.getLocalConnection();
+        String config = localConnection==null?"mysql":localConnection.getDialect();
         return getDialectSqlBuilder(config);
     }
 

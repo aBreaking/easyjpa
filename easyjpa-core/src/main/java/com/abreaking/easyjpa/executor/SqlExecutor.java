@@ -2,6 +2,7 @@ package com.abreaking.easyjpa.executor;
 
 import com.abreaking.easyjpa.mapper.RowMapper;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface SqlExecutor {
      * 从connection可以获取数据库的相关信息，进而可以初始化一些全局配置
      * @return Connection
      */
-    ConnectionHolder getConnectionHolder();
+    Connection getConnection();
 
     /**
      * 通用的查询执行器，它主要是执行一条select 语句，然后将结果用rowMapper映射后返回
