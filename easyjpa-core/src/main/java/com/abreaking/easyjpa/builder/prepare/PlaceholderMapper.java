@@ -35,11 +35,6 @@ public class PlaceholderMapper{
         this.argMap = argMap;
     }
 
-    public PlaceholderMapper(String placeholderSql, Object entity) {
-        this(placeholderSql);
-        this.addArgByEntity(entity);
-    }
-
     public void append(String placeholderSqlFragment){
         fragmentList.add(new Fragment(placeholderSqlFragment));
     }

@@ -29,6 +29,8 @@ public final class ClassMapper {
      * 映射后的表名
      */
     private String tableName;
+    //是否是动态表名
+    private boolean dynamicTableName = false;
 
     /**
      * 字段属性的映射
@@ -87,7 +89,7 @@ public final class ClassMapper {
     private void initTableName(Class obj){
         if(obj.isAnnotationPresent(Table.class)){
             Table table = (Table) obj.getAnnotation(Table.class);
-            this.tableName = table.name();
+            tableName = table.name();
         }else{
             this.tableName =  StringUtils.underscoreName(obj.getSimpleName());
         }
