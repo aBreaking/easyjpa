@@ -1,5 +1,7 @@
 package com.abreaking.easyjpa.dao.impl;
 
+import com.abreaking.easyjpa.builder.PlaceHolderSqlBuilder;
+import com.abreaking.easyjpa.builder.prepare.PlaceholderMapper;
 import com.abreaking.easyjpa.dao.condition.SqlConst;
 import com.abreaking.easyjpa.exception.EasyJpaException;
 import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
@@ -7,15 +9,16 @@ import com.abreaking.easyjpa.mapper.ClassRowMapper;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.CurdTemplate;
+import com.abreaking.easyjpa.mapper.RowMapper;
 import com.abreaking.easyjpa.support.EasyJpa;
 import com.abreaking.easyjpa.dao.EasyJpaDao;
 import com.abreaking.easyjpa.dao.condition.Page;
-import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
+import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.JavaMapRowMapper;
 import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
-import com.abreaking.easyjpa.sql.ConditionBuilderDelegate;
+import com.abreaking.easyjpa.builder.ConditionBuilderDelegate;
 
 import java.sql.Connection;
 import java.util.Collections;
@@ -132,5 +135,27 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
     @Override
     public <T> void deleteByCondition(EasyJpa<T> conditions) {
         super.delete(conditions.getTableName(),conditions);
+    }
+
+    @Override
+    public <T> List<T> query(PlaceholderMapper placeholderSql, RowMapper<T> resultRowMapper) {
+        PlaceHolderSqlBuilder placeHolderSqlBuilder = new PlaceHolderSqlBuilder(placeholderSql);
+        PreparedWrapper preparedWrapper = placeHolderSqlBuilder.visit(null);
+        return doSelect(resultRowMapper,preparedWrapper);
+    }
+
+    @Override
+    public <T> List<T> query(PreparedWrapper preparedSql, RowMapper<T> resultRowMapper) {
+        return doSelect(resultRowMapper,preparedSql);
+    }
+
+    @Override
+    public void execute(PlaceholderMapper placeholderMapper) {
+        doExecute(new PlaceHolderSqlBuilder(placeholderMapper).visit(null));
+    }
+
+    @Override
+    public void execute(PreparedWrapper preparedSql) {
+        doExecute(preparedSql);
     }
 }

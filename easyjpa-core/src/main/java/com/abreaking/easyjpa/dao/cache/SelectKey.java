@@ -1,7 +1,6 @@
 package com.abreaking.easyjpa.dao.cache;
 
-import com.abreaking.easyjpa.dao.condition.Conditions;
-import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
+import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.mapper.RowMapper;
 
 import java.util.Objects;

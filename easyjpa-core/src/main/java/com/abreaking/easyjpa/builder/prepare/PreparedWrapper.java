@@ -1,4 +1,4 @@
-package com.abreaking.easyjpa.dao.prepare;
+package com.abreaking.easyjpa.builder.prepare;
 
 
 import com.abreaking.easyjpa.mapper.matrix.Matrix;

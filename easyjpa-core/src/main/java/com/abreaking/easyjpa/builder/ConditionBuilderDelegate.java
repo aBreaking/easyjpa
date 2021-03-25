@@ -1,12 +1,11 @@
-package com.abreaking.easyjpa.sql;
+package com.abreaking.easyjpa.builder;
 
 import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.SqlConst;
 import com.abreaking.easyjpa.exception.EasyJpaException;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
-import com.abreaking.easyjpa.sql.dialect.DialectSqlBuilder;
-import com.abreaking.easyjpa.support.EasyJpa;
+import com.abreaking.easyjpa.builder.dialect.DialectSqlBuilder;
 import com.abreaking.easyjpa.util.SqlUtil;
 import com.abreaking.easyjpa.util.StringUtils;
 

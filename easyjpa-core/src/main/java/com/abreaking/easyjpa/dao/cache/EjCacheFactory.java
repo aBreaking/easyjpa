@@ -1,7 +1,6 @@
 package com.abreaking.easyjpa.dao.cache;
 
 import com.abreaking.easyjpa.executor.ConnectionHolder;
-import com.abreaking.easyjpa.executor.ConnectionWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,10 +12,13 @@ import java.util.Map;
  */
 public class EjCacheFactory {
 
-    private static final Map<ConnectionWrapper,EjCache> CACHE_MAP = new HashMap<>();
+    /**
+     * cache缓存，get 用了dcl
+     */
+    private static final Map<ConnectionHolder,EjCache> CACHE_MAP = new HashMap<>();
 
     public static EjCache getLocalDefaultCache(){
-        ConnectionWrapper connectionWrapper = ConnectionHolder.getLocalConnection();
+        ConnectionHolder connectionWrapper = ConnectionHolder.getLocalConnection();
         if (!CACHE_MAP.containsKey(connectionWrapper)){
             synchronized (CACHE_MAP){
                 if (!CACHE_MAP.containsKey(connectionWrapper)){

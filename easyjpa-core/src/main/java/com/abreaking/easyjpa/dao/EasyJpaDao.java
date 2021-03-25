@@ -1,8 +1,11 @@
 package com.abreaking.easyjpa.dao;
 
+import com.abreaking.easyjpa.builder.prepare.PlaceholderMapper;
+import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.Page;
 import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
+import com.abreaking.easyjpa.mapper.RowMapper;
 import com.abreaking.easyjpa.support.EasyJpa;
 
 import java.util.List;
@@ -89,5 +92,13 @@ public interface EasyJpaDao {
      * @return
      */
     <T> void insert(T entity);
+
+    <T> List<T> query(PlaceholderMapper placeholderSql, RowMapper<T> resultRowMapper);
+
+    <T> List<T> query(PreparedWrapper preparedSql, RowMapper<T> resultRowMapper);
+
+    void execute(PlaceholderMapper placeholderMapper);
+
+    void execute(PreparedWrapper preparedSql);
 
 }

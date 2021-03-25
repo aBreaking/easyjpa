@@ -7,7 +7,7 @@ import java.util.List;
  * 它的作用是根据指定的sql关键字，获取所有的condition。 最后交由SqlBuilder来组装成sql语句
  * @see Condition
  * @see SqlConst
- * @see com.abreaking.easyjpa.sql.SqlBuilder
+ * @see com.abreaking.easyjpa.builder.SqlBuilder
  * @author liwei_paas
  * @date 2020/12/29
  */

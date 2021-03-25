@@ -1,9 +1,8 @@
-package com.abreaking.easyjpa.sql;
+package com.abreaking.easyjpa.builder;
 
 import com.abreaking.easyjpa.dao.condition.Conditions;
-import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
+import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
-import com.abreaking.easyjpa.support.EasyJpa;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 
 

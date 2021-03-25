@@ -4,14 +4,14 @@ import com.abreaking.easyjpa.dao.cache.EjCache;
 import com.abreaking.easyjpa.dao.cache.EjCacheFactory;
 import com.abreaking.easyjpa.dao.cache.SelectKey;
 import com.abreaking.easyjpa.dao.condition.Conditions;
-import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
+import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
 import com.abreaking.easyjpa.executor.ConnectionHolder;
 import com.abreaking.easyjpa.executor.JdbcSqlExecutor;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.RowMapper;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
-import com.abreaking.easyjpa.sql.*;
+import com.abreaking.easyjpa.builder.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -50,17 +50,17 @@ public class CurdTemplate {
 
     public void update(String table, Matrix updateMatrix, Conditions conditions){
         SqlBuilder update = new UpdateSqlBuilder(table, updateMatrix);
-        doExecute(table,()->update.visit(conditions));
+        doCachesExecute(table,()->update.visit(conditions));
     }
 
     public void insert(String table, Matrix matrix) {
         SqlBuilder insert = new InsertSqlBuilder(table,matrix);
-        doExecute(table,()->insert.visit(null));
+        doCachesExecute(table,()->insert.visit(null));
     }
 
     public void delete(String table,Conditions conditions){
         SqlBuilder delete = new DeleteSqlBuilder(table);
-        doExecute(table,()->delete.visit(conditions));
+        doCachesExecute(table,()->delete.visit(conditions));
     }
 
     protected List doSelect(RowMapper rowMapper,PreparedWrapper preparedWrapper){
@@ -69,6 +69,17 @@ public class CurdTemplate {
         int[] types = preparedWrapper.getTypes();
         try {
             return sqlExecutor.query(preparedSql,values,types,rowMapper);
+        }catch (SQLException e){
+            throw new EasyJpaSqlExecutionException(preparedSql,values,e);
+        }
+    }
+
+    protected void doExecute(PreparedWrapper preparedWrapper){
+        String preparedSql = preparedWrapper.getPreparedSql();
+        Object[] values = preparedWrapper.getValues();
+        int[] types = preparedWrapper.getTypes();
+        try {
+            sqlExecutor.execute(preparedSql,values,types);
         }catch (SQLException e){
             throw new EasyJpaSqlExecutionException(preparedSql,values,e);
         }
@@ -91,18 +102,7 @@ public class CurdTemplate {
         return result;
     }
 
-    protected void doExecute(PreparedWrapper preparedWrapper){
-        String preparedSql = preparedWrapper.getPreparedSql();
-        Object[] values = preparedWrapper.getValues();
-        int[] types = preparedWrapper.getTypes();
-        try {
-            sqlExecutor.execute(preparedSql,values,types);
-        }catch (SQLException e){
-            throw new EasyJpaSqlExecutionException(preparedSql,values,e);
-        }
-    }
-
-    protected void doExecute(String tableName,Supplier<PreparedWrapper> supplier){
+    protected void doCachesExecute(String tableName,Supplier<PreparedWrapper> supplier){
         ConnectionHolder.setLocalConnection(sqlExecutor.getConnection());
         PreparedWrapper preparedWrapper = supplier.get();
         EjCache defaultCache = EjCacheFactory.getLocalDefaultCache();

@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 public class LruEjCache  implements EjCache{
 
     private static final int DEFAULT_MAX_BUCKETS_NUMBER = 16;
-    private static final int DEFAULT_MAX_BUCKETS_SIZE = 32;
+    private static final int DEFAULT_MAX_BUCKETS_SIZE = 64;
 
     /**
      * 最多有几个桶
@@ -104,39 +104,6 @@ public class LruEjCache  implements EjCache{
             cache.remove(bucket);
             writeLock.unlock();
         }
-    }
-
-    @Override
-    public Object hgetOrHputIfAbsent(String bucket, SelectKey key, Supplier supplier) {
-        if (cache.containsKey(bucket)){
-            Bucket b = cache.get(bucket);
-            readLock.lock();
-            try{
-                if (!b.containsKey(key)){
-                    writeLock.lock();
-                    try{
-                        if (!b.containsKey(key)){
-                            Object value = supplier.get();
-                            lruPut(b,key,value);
-                            return value;
-                        }
-                    }finally {
-                        writeLock.unlock();
-                    }
-                }
-            }finally {
-                readLock.unlock();
-            }
-        }else{
-            synchronized (cache){
-                if (!cache.containsKey(bucket)){
-                    Object value = supplier.get();
-                    lruPut(new Bucket(maxBucketSize),key,value);
-                    return value;
-                }
-            }
-        }
-        return cache.get(bucket).get(key);
     }
 
     private Object bucketGet(String bucket,SelectKey key){

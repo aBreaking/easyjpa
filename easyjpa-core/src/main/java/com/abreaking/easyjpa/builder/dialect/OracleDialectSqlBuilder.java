@@ -1,4 +1,4 @@
-package com.abreaking.easyjpa.sql.dialect;
+package com.abreaking.easyjpa.builder.dialect;
 
 
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;

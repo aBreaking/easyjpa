@@ -27,11 +27,11 @@ import java.util.Map;
  * @author liwei_paas
  * @date 2021/1/6
  */
-public class PreparedTypeMapper implements RowMapper {
+public class AutoTypeRowMapper implements RowMapper {
 
     private Class[] returnTypes;
 
-    public PreparedTypeMapper(Class[] returnTypes) {
+    public AutoTypeRowMapper(Class...returnTypes) {
         this.returnTypes = returnTypes;
     }
 
@@ -80,7 +80,7 @@ public class PreparedTypeMapper implements RowMapper {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PreparedTypeMapper that = (PreparedTypeMapper) o;
+        AutoTypeRowMapper that = (AutoTypeRowMapper) o;
         return Arrays.equals(returnTypes, that.returnTypes);
     }
 

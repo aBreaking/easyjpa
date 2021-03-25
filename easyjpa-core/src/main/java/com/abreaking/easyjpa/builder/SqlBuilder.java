@@ -1,9 +1,8 @@
-package com.abreaking.easyjpa.sql;
+package com.abreaking.easyjpa.builder;
 
 
 import com.abreaking.easyjpa.dao.condition.Conditions;
-import com.abreaking.easyjpa.dao.prepare.PreparedWrapper;
-import com.abreaking.easyjpa.mapper.matrix.Matrix;
+import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
 
 /**
  * sql语句的构造器

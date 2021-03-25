@@ -10,7 +10,7 @@ import java.util.Arrays;
 public class EasyJpaSqlExecutionException extends EasyJpaException {
 
     public EasyJpaSqlExecutionException(String prepareSql,Object[] values,Throwable cause){
-        this("executing sql failed. the prepared sql : ["+prepareSql+"], values : "+Arrays.toString(values),cause);
+        this("executing builder failed. the prepared builder : ["+prepareSql+"], values : "+Arrays.toString(values),cause);
     }
 
     public EasyJpaSqlExecutionException(String message) {
