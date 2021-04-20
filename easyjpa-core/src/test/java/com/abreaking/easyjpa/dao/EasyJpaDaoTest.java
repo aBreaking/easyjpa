@@ -8,7 +8,9 @@ import com.abreaking.easyjpa.support.EasyJpa;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -19,6 +21,34 @@ import java.util.Date;
 public class EasyJpaDaoTest {
 
     public static EasyJpaDao dao = new EasyJpaDaoImpl(MyDataSource.localhostConnection());
+
+    @Test
+    public void test_batchInsert(){
+        List<User> list = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            User user = new User("name" + i, new Date());
+            user.setHeight(1.7f+0.01f*i);
+            user.setPhoneNo(123450L+i);
+            list.add(user);
+        }
+        dao.insertBatch(list);
+    }
+
+    @Test
+    public void test_thread() throws InterruptedException {
+        for (int i = 0; i < 100; i++) {
+            int s = i;
+            new Thread(()->{
+                User user = dao.get(User.class, s%9);
+                System.out.println(Thread.currentThread().getName()+"->"+s%9+"->"+user);
+                if (user!=null && user.getUserId()!=s%9){
+                    System.err.println(user);
+                }
+            }).start();
+        }
+        Thread.currentThread().join();
+
+    }
 
     @Test
     public void test_insert(){
@@ -74,8 +104,8 @@ public class EasyJpaDaoTest {
     @Test
     public void test_queryByPage(){
         EasyJpa easyJpa = new EasyJpa(User.class);
-        easyJpa.and(Condition.to("height","<",2));
-        easyJpa.orderBy("height");
+        //easyJpa.and(Condition.to("height","<",2));
+        //easyJpa.orderBy("height");
         Page page = new Page(2,2);
         dao.queryByPage(easyJpa,page);
         System.out.println(page); //分页的数据
@@ -90,7 +120,8 @@ public class EasyJpaDaoTest {
         easyJpa.and(Condition.like("userName","三"));
         System.out.println(dao.queryByCondition(easyJpa)); //张大三 , 张三
 
-        easyJpa.and(Condition.between("height",1.1F,2F));
+        easyJpa = new EasyJpa(User.class);
+        easyJpa.and(Condition.between("height",1.8F,2F));
         System.out.println(dao.queryByCondition(easyJpa)); //张三
     }
 
@@ -99,18 +130,16 @@ public class EasyJpaDaoTest {
         User user = new User();
         System.out.println("all->"+dao.query(user)); // all
 
-        user.setHeight(2F);
-        System.out.println(dao.query(user)); // userid = 2 ,3
 
-        user.setUserId(2);
-        System.out.println(dao.query(user)); // userId = 2
+        user.setUserId(4);
+        System.out.println(dao.query(user));
     }
 
     @Test
     public void test_get(){
-        User user = dao.get(User.class, 1);
+        User user = dao.get(User.class, 10088);
         System.out.println(user);
-        Assert.assertEquals("张大三",user.getUserName());
+        Assert.assertEquals("name0",user.getUserName());
 
         User userWillBeNull = dao.get(User.class, 99999);
         System.out.println(userWillBeNull);

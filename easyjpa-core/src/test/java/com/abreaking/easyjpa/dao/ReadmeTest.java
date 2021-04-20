@@ -4,12 +4,9 @@ import com.abreaking.easyjpa.User;
 import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.condition.Page;
 import com.abreaking.easyjpa.dao.impl.EasyJpaDaoImpl;
-import com.abreaking.easyjpa.dao.prepare.PlaceholderMapper;
-import com.abreaking.easyjpa.dao.prepare.PreparedMapper;
+import com.abreaking.easyjpa.support.EasyJpa;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,22 +23,8 @@ public class ReadmeTest {
     public ReadmeTest() throws SQLException {
     }
 
-    static Connection localhostConnection()  {
-        String jdbcDriver = "com.mysql.jdbc.Driver";
-        String jdbcUrl = "jdbc:mysql://localhost:3306/test?characterEncoding=utf-8";
-        String jdbcUserName = "root";
-        String jdbcPassword = "mysqladmin";
-        try {
-            Class.forName(jdbcDriver);
-            Connection connection = DriverManager.getConnection(jdbcUrl, jdbcUserName, jdbcPassword);
-            connection.setAutoCommit(true); // update/insert/delete 自动提交
-            return connection;
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
-    }
 
-    public static EasyJpaDao dao = new EasyJpaDaoImpl(localhostConnection());
+    public static EasyJpaDao dao = new EasyJpaDaoImpl(MyDataSource.localhostConnection());
 
 
     @Test
@@ -72,13 +55,13 @@ public class ReadmeTest {
 
     }
 
-    @Test
+    /*@Test
     public void test08(){
         String prepareSql = "select user_name,height from ${tableName} where user_name like #{userName} and height>#{height}";
         User user = new User();
         user.setUserName("%王%");
         user.setHeight(1.7F);
-        PlaceholderMapper placeholderMapper = EasyJpa.buildPlaceholder(prepareSql, user);
+        PlaceholderWrapper placeholderMapper = EasyJpa.buildPlaceholder(prepareSql, user);
         List<User> list = dao.queryByPlaceholderSql(placeholderMapper,User.class);
         prettyPrint(list);
     }
@@ -89,7 +72,7 @@ public class ReadmeTest {
         PreparedMapper preparedMapper = EasyJpa.buildPrepared(prepareSql, "%王%", 1.7F);
         List<User> list = dao.queryByPreparedSql(preparedMapper,User.class);
         prettyPrint(list);
-    }
+    }*/
 
     @Test
     public void test06() throws ParseException {
