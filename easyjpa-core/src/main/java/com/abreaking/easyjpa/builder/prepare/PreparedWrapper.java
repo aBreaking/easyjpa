@@ -2,7 +2,7 @@ package com.abreaking.easyjpa.builder.prepare;
 
 
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
-import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.SqlUtils;
 
 import java.util.Arrays;
 
@@ -33,7 +33,7 @@ public class PreparedWrapper {
         this.values = args;
         this.types = new int[args.length];
         for (int i = 0; i < args.length; i++) {
-            types[i] = SqlUtil.getSqlTypeByValue(args[i]);
+            types[i] = SqlUtils.getSqlTypeByValue(args[i]);
         }
     }
 

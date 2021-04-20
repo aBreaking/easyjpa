@@ -1,7 +1,7 @@
 package com.abreaking.easyjpa.builder.dialect;
 
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
-import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.SqlUtils;
 
 /**
  * mysql的方言
@@ -18,8 +18,8 @@ public class MysqlDialectSqlBuilder extends DialectSqlBuilder{
             sqlBuilder.append("?");
         }else{
             sqlBuilder.append("?,?");
-            columnMatrix.put("pageStartIndex",SqlUtil.getSqlType(Integer.class),pageStartIndex);
+            columnMatrix.put("pageStartIndex",SqlUtils.getSqlType(Integer.class),pageStartIndex);
         }
-        columnMatrix.put("pageSize",SqlUtil.getSqlType(Integer.class),pageSize);
+        columnMatrix.put("pageSize",SqlUtils.getSqlType(Integer.class),pageSize);
     }
 }

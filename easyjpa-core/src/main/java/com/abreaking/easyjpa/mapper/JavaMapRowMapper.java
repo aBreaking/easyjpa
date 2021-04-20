@@ -1,6 +1,6 @@
 package com.abreaking.easyjpa.mapper;
 
-import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.SqlUtils;
 
 import java.sql.*;
 import java.util.Arrays;
@@ -31,8 +31,8 @@ public class JavaMapRowMapper implements RowMapper{
         for (int i = 1; i <= columnCount; i++) {
             int columnType = metaData.getColumnType(i);
             String columnName = metaData.getColumnName(i);
-            Class type = returnTypes!=null&&returnTypes.length>=i?returnTypes[i-1]:SqlUtil.getSoftJavaType(columnType);
-            Object value = SqlUtil.getSoftResultSetValue(rs, i, type);
+            Class type = returnTypes!=null&&returnTypes.length>=i?returnTypes[i-1]:SqlUtils.getSoftJavaType(columnType);
+            Object value = SqlUtils.getSoftResultSetValue(rs, i, type);
             map.put(columnName,value);
         }
         return map;

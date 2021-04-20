@@ -1,9 +1,10 @@
 package com.abreaking.easyjpa.dao.impl;
 
 import com.abreaking.easyjpa.builder.PlaceHolderSqlBuilder;
-import com.abreaking.easyjpa.builder.prepare.PlaceholderMapper;
+import com.abreaking.easyjpa.builder.prepare.PlaceholderWrapper;
 import com.abreaking.easyjpa.dao.condition.SqlConst;
 import com.abreaking.easyjpa.exception.EasyJpaException;
+import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
 import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
 import com.abreaking.easyjpa.mapper.ClassRowMapper;
 import com.abreaking.easyjpa.dao.condition.Conditions;
@@ -21,6 +22,7 @@ import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.builder.ConditionBuilderDelegate;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +140,41 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
     }
 
     @Override
-    public <T> List<T> query(PlaceholderMapper placeholderSql, RowMapper<T> resultRowMapper) {
+    public <T> void insertBatch(List<T> list) {
+        if (list.isEmpty()){
+            return;
+        }
+        //使用事务，批量insert
+        Connection connection = sqlExecutor.getConnection();
+        Boolean autoCommit = null;
+        try {
+            autoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            for (T t : list){
+                EasyJpa easyJpa = new EasyJpa(t);
+                super.insert(easyJpa.getTableName(),easyJpa.matrix());
+            }
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                throw new EasyJpaException(e1);
+            }
+            throw new EasyJpaSqlExecutionException("batch insert failed",e);
+        }finally {
+            if (autoCommit!=null){
+                try {
+                    connection.setAutoCommit(autoCommit);
+                } catch (SQLException e) {
+                    throw new EasyJpaException(e);
+                }
+            }
+        }
+    }
+
+    @Override
+    public <T> List<T> query(PlaceholderWrapper placeholderSql, RowMapper<T> resultRowMapper) {
         PlaceHolderSqlBuilder placeHolderSqlBuilder = new PlaceHolderSqlBuilder(placeholderSql);
         PreparedWrapper preparedWrapper = placeHolderSqlBuilder.visit(null);
         return doSelect(resultRowMapper,preparedWrapper);
@@ -150,8 +186,8 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
     }
 
     @Override
-    public void execute(PlaceholderMapper placeholderMapper) {
-        doExecute(new PlaceHolderSqlBuilder(placeholderMapper).visit(null));
+    public void execute(PlaceholderWrapper placeholderWrapper) {
+        doExecute(new PlaceHolderSqlBuilder(placeholderWrapper).visit(null));
     }
 
     @Override

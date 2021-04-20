@@ -2,7 +2,7 @@ package com.abreaking.easyjpa.builder.prepare;
 
 
 import com.abreaking.easyjpa.mapper.ClassMapper;
-import com.abreaking.easyjpa.util.ReflectUtil;
+import com.abreaking.easyjpa.util.ReflectUtils;
 import com.abreaking.easyjpa.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +15,7 @@ import java.util.function.Function;
  * @author liwei_paas
  * @date 2021/1/6
  */
-public class PlaceholderMapper{
+public class PlaceholderWrapper {
 
     //sql占位符片段
     private List<Fragment> fragmentList = new LinkedList<>();
@@ -23,14 +23,14 @@ public class PlaceholderMapper{
     // 占位符的参数即对应值
     private Map<String, Object> argMap = new HashMap<>();
 
-    public PlaceholderMapper() {
+    public PlaceholderWrapper() {
     }
 
-    public PlaceholderMapper(String placeholderSql) {
+    public PlaceholderWrapper(String placeholderSql) {
         append(placeholderSql);
     }
 
-    public PlaceholderMapper(String placeholderSql, Map<String, Object> argMap) {
+    public PlaceholderWrapper(String placeholderSql, Map<String, Object> argMap) {
         append(placeholderSql);
         this.argMap = argMap;
     }
@@ -39,14 +39,14 @@ public class PlaceholderMapper{
         fragmentList.add(new Fragment(placeholderSqlFragment));
     }
 
-    public void appendIfArgNotNull(String placeholderSqlFragment,String key){
-        fragmentList.add(new Fragment(placeholderSqlFragment,map->argMap.containsKey(key) && argMap.get(key)!=null));
+    public void appendIfArgValueNotNull(String placeholderSqlFragment, String argKey){
+        fragmentList.add(new Fragment(placeholderSqlFragment,map->argMap.containsKey(argKey) && argMap.get(argKey)!=null));
     }
 
-    public void appendIfArgNotEmpty(String placeholderSqlFragment,String key){
+    public void appendIfArgValueNotEmpty(String placeholderSqlFragment,String argKey){
         fragmentList.add(new Fragment(placeholderSqlFragment,argMap->{
-            if (!argMap.containsKey(key)) return false;
-            Object value = argMap.get(key);
+            if (!argMap.containsKey(argKey)) return false;
+            Object value = argMap.get(argKey);
             if (value==null) return false;
             if (value instanceof String){
                 return StringUtils.isNotEmpty((String) value);
@@ -64,15 +64,15 @@ public class PlaceholderMapper{
 
     }
 
-    public void appendIfArgNotEqualValue(String placeholderSqlFragment,String key,Object value){
-        Object o = argMap.get(key);
+    public void appendIfArgNotEqualValue(String placeholderSqlFragment,String argKey,Object value){
+        Object o = argMap.get(argKey);
         if (o!=null && !o.equals(value)){
             append(placeholderSqlFragment);
         }
     }
 
     public void addArgByEntity(Object entity){
-        Map<String, Method> methodMap = ReflectUtil.poGetterMethodsMap(entity.getClass());
+        Map<String, Method> methodMap = ReflectUtils.poGetterMethodsMap(entity.getClass());
         for (String filedName : methodMap.keySet()){
             if (argMap.containsKey(filedName)){
                 continue;

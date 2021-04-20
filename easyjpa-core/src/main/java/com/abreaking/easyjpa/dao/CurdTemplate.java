@@ -63,28 +63,6 @@ public class CurdTemplate {
         doCachesExecute(table,()->delete.visit(conditions));
     }
 
-    protected List doSelect(RowMapper rowMapper,PreparedWrapper preparedWrapper){
-        String preparedSql = preparedWrapper.getPreparedSql();
-        Object[] values = preparedWrapper.getValues();
-        int[] types = preparedWrapper.getTypes();
-        try {
-            return sqlExecutor.query(preparedSql,values,types,rowMapper);
-        }catch (SQLException e){
-            throw new EasyJpaSqlExecutionException(preparedSql,values,e);
-        }
-    }
-
-    protected void doExecute(PreparedWrapper preparedWrapper){
-        String preparedSql = preparedWrapper.getPreparedSql();
-        Object[] values = preparedWrapper.getValues();
-        int[] types = preparedWrapper.getTypes();
-        try {
-            sqlExecutor.execute(preparedSql,values,types);
-        }catch (SQLException e){
-            throw new EasyJpaSqlExecutionException(preparedSql,values,e);
-        }
-    }
-
     protected List doCachesSelect(String tableName,RowMapper rowMapper,Supplier<PreparedWrapper> supplier){
         ConnectionHolder.setLocalConnection(sqlExecutor.getConnection());
         PreparedWrapper preparedWrapper = supplier.get();
@@ -113,6 +91,28 @@ public class CurdTemplate {
             ConnectionHolder.removeLocalConnection();
         }
 
+    }
+
+    protected List doSelect(RowMapper rowMapper,PreparedWrapper preparedWrapper){
+        String preparedSql = preparedWrapper.getPreparedSql();
+        Object[] values = preparedWrapper.getValues();
+        int[] types = preparedWrapper.getTypes();
+        try {
+            return sqlExecutor.query(preparedSql,values,types,rowMapper);
+        }catch (SQLException e){
+            throw new EasyJpaSqlExecutionException(preparedSql,values,e);
+        }
+    }
+
+    protected void doExecute(PreparedWrapper preparedWrapper){
+        String preparedSql = preparedWrapper.getPreparedSql();
+        Object[] values = preparedWrapper.getValues();
+        int[] types = preparedWrapper.getTypes();
+        try {
+            sqlExecutor.execute(preparedSql,values,types);
+        }catch (SQLException e){
+            throw new EasyJpaSqlExecutionException(preparedSql,values,e);
+        }
     }
 
 

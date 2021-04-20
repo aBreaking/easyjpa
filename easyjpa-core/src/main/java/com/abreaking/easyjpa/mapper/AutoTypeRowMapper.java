@@ -1,7 +1,7 @@
 package com.abreaking.easyjpa.mapper;
 
 import com.abreaking.easyjpa.exception.EntityObjectNeedsException;
-import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.SqlUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,7 +40,7 @@ public class AutoTypeRowMapper implements RowMapper {
         if (returnTypes!=null ){
             if (returnTypes.length==1){
                 Class returnType = returnTypes[0];
-                if (SqlUtil.getSqlType(returnType)==0){
+                if (SqlUtils.getSqlType(returnType)==0){
                     try {
                         return new ClassRowMapper(returnType).mapRow(rs,rowNum);
                     }catch (EntityObjectNeedsException e){
@@ -55,7 +55,7 @@ public class AutoTypeRowMapper implements RowMapper {
                 // 先判断所有的类型可不可能是实体类型
                 boolean isEntity = false;
                 for (Class returnType : returnTypes){
-                    if (!(isEntity = SqlUtil.getSqlType(returnType)==0)){
+                    if (!(isEntity = SqlUtils.getSqlType(returnType)==0)){
                         break;
                     }
                 }

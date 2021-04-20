@@ -1,6 +1,6 @@
 package com.abreaking.easyjpa.dao;
 
-import com.abreaking.easyjpa.builder.prepare.PlaceholderMapper;
+import com.abreaking.easyjpa.builder.prepare.PlaceholderWrapper;
 import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.Page;
@@ -12,7 +12,7 @@ import java.util.List;
 
 
 /**
- * 枚举可用的curd操作
+ * 可用的curd操作
  * @author liwei_paas
  * @date 2020/12/2
  */
@@ -93,11 +93,13 @@ public interface EasyJpaDao {
      */
     <T> void insert(T entity);
 
-    <T> List<T> query(PlaceholderMapper placeholderSql, RowMapper<T> resultRowMapper);
+    <T> void insertBatch(List<T> list);
+
+    <T> List<T> query(PlaceholderWrapper placeholderSql, RowMapper<T> resultRowMapper);
 
     <T> List<T> query(PreparedWrapper preparedSql, RowMapper<T> resultRowMapper);
 
-    void execute(PlaceholderMapper placeholderMapper);
+    void execute(PlaceholderWrapper placeholderWrapper);
 
     void execute(PreparedWrapper preparedSql);
 

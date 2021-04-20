@@ -1,10 +1,7 @@
 package com.abreaking.easyjpa.mapper;
 
 import com.abreaking.easyjpa.exception.EntityObjectNeedsException;
-import com.abreaking.easyjpa.mapper.ClassMapper;
-import com.abreaking.easyjpa.mapper.FieldMapper;
-import com.abreaking.easyjpa.mapper.RowMapper;
-import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.SqlUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -52,7 +49,7 @@ public class ClassRowMapper<T> implements RowMapper {
             try {
                 Field field = fieldMapper.getField();
                 field.setAccessible(true);
-                Object o = SqlUtil.getSoftResultSetValue(rs, i, field.getType());
+                Object o = SqlUtils.getSoftResultSetValue(rs, i, field.getType());
                 field.set(instance,o);
             } catch (IllegalAccessException e) {
                 continue;

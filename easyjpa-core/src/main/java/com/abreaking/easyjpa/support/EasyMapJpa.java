@@ -7,7 +7,7 @@ import com.abreaking.easyjpa.mapper.MatrixMapper;
 import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
-import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.SqlUtils;
 import com.abreaking.easyjpa.util.StringUtils;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class EasyMapJpa implements MatrixMapper,Conditions {
 
     public EasyMapJpa(Map<String, Object> map,Boolean formatKey2Column) {
         this.matrix = new AxisColumnMatrix(map.size());
-        map.forEach((k,v)->matrix.put(formatKey2Column?StringUtils.underscoreName(k):k,SqlUtil.getSqlType(v.getClass()),v));
+        map.forEach((k,v)->matrix.put(formatKey2Column?StringUtils.underscoreName(k):k,SqlUtils.getSqlType(v.getClass()),v));
     }
 
     @Override

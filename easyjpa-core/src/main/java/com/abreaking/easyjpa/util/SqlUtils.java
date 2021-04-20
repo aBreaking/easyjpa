@@ -12,7 +12,7 @@ import java.util.Date;
  * @author liwei_paas
  * @date 2019/11/22
  */
-public class SqlUtil {
+public class SqlUtils {
 
     public static int getSqlTypeByValue(Object value){
         if (value==null){

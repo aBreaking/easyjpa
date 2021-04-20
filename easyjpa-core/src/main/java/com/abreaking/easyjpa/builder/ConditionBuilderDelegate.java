@@ -6,7 +6,7 @@ import com.abreaking.easyjpa.dao.condition.SqlConst;
 import com.abreaking.easyjpa.exception.EasyJpaException;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.builder.dialect.DialectSqlBuilder;
-import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.SqlUtils;
 import com.abreaking.easyjpa.util.StringUtils;
 
 import java.util.List;
@@ -82,7 +82,7 @@ public class ConditionBuilderDelegate {
                 throw new EasyJpaException("every condition must specify column name and value");
             }
             Integer type = condition.getSqlType();
-            if (type==null)type = SqlUtil.getSqlTypeByValue(values[0]);
+            if (type==null)type = SqlUtils.getSqlTypeByValue(values[0]);
             sqlBuilder.append(columnName).append(" ");
             sqlBuilder.append(condition.getPrepare()).append(" ");
             sqlBuilder.append(separator).append(" ");

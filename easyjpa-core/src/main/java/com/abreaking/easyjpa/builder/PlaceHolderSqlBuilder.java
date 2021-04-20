@@ -1,8 +1,8 @@
 package com.abreaking.easyjpa.builder;
 
+import com.abreaking.easyjpa.builder.prepare.PlaceholderWrapper;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
-import com.abreaking.easyjpa.builder.prepare.PlaceholderMapper;
 import com.abreaking.easyjpa.exception.EasyJpaException;
 
 import java.util.*;
@@ -21,19 +21,19 @@ public class PlaceHolderSqlBuilder implements SqlBuilder{
 
     private static final Pattern pattern = Pattern.compile("(\\$|#)\\{\\w+}");
 
-    PlaceholderMapper placeholderMapper;
+    PlaceholderWrapper placeholderWrapper;
 
-    public PlaceHolderSqlBuilder(PlaceholderMapper placeholderMapper){
-        this.placeholderMapper = placeholderMapper;
+    public PlaceHolderSqlBuilder(PlaceholderWrapper placeholderWrapper){
+        this.placeholderWrapper = placeholderWrapper;
     }
 
     @Override
     public PreparedWrapper visit(Conditions conditions) {
-        List<PlaceholderMapper.Fragment> fragmentList = placeholderMapper.getFragmentList();
-        Map<String, Object> argMap = placeholderMapper.getArgMap();
+        List<PlaceholderWrapper.Fragment> fragmentList = placeholderWrapper.getFragmentList();
+        Map<String, Object> argMap = placeholderWrapper.getArgMap();
         StringBuilder sqlBuilder = new StringBuilder();
         List<Object> values = new ArrayList<>();
-        for (PlaceholderMapper.Fragment fragment : fragmentList){
+        for (PlaceholderWrapper.Fragment fragment : fragmentList){
             Function<Map, Boolean> rule = fragment.getRule();
             if (rule.apply(argMap)){
                 doParsePlaceholder(sqlBuilder,values,argMap,fragment.getFragmentSql());

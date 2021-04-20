@@ -3,7 +3,7 @@ package com.abreaking.easyjpa.mapper;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import com.abreaking.easyjpa.mapper.annotation.Pk;
-import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.SqlUtils;
 import com.abreaking.easyjpa.util.StringUtils;
 
 import java.lang.reflect.Field;
@@ -40,7 +40,7 @@ public class FieldMapper {
         this.columnName = field.isAnnotationPresent(Column.class)?
                 field.getAnnotation(Column.class).name():
                 StringUtils.underscoreName(field.getName());
-        this.columnType = SqlUtil.getSoftSqlType(field.getType());
+        this.columnType = SqlUtils.getSoftSqlType(field.getType());
         this.getterMethod = method;
         this.filedName = field.getName();
     }

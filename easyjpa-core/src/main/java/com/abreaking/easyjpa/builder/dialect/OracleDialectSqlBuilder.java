@@ -2,7 +2,7 @@ package com.abreaking.easyjpa.builder.dialect;
 
 
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
-import com.abreaking.easyjpa.util.SqlUtil;
+import com.abreaking.easyjpa.util.SqlUtils;
 
 /**
  * oracle的方言
@@ -17,7 +17,7 @@ public class OracleDialectSqlBuilder extends DialectSqlBuilder{
         int rowEnd = pageSize+rowStart;
         sqlBuilder.insert(0,"SELECT * FROM (SELECT ej_tmp.*, ROWNUM ej_rowStart FROM ( ");
         sqlBuilder.append(" ) ej_tmp WHERE ROWNUM <= ?) WHERE ej_rowStart >= ?");
-        columnMatrix.put("rowEnd",SqlUtil.getSqlType(Integer.class),rowEnd);
-        columnMatrix.put("rowStart",SqlUtil.getSqlType(Integer.class),rowStart);
+        columnMatrix.put("rowEnd",SqlUtils.getSqlType(Integer.class),rowEnd);
+        columnMatrix.put("rowStart",SqlUtils.getSqlType(Integer.class),rowStart);
     }
 }

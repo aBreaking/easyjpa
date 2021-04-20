@@ -1,6 +1,7 @@
 package com.abreaking.easyjpa.mapper;
 
-import com.abreaking.easyjpa.util.ReflectUtil;
+import com.abreaking.easyjpa.mapper.annotation.DateTable;
+import com.abreaking.easyjpa.util.ReflectUtils;
 import com.abreaking.easyjpa.util.StringUtils;
 
 import javax.persistence.Table;
@@ -30,7 +31,7 @@ public final class ClassMapper {
      */
     private String tableName;
     //是否是动态表名
-    private boolean dynamicTableName = false;
+    private boolean isDynamicTableName = false;
 
     /**
      * 字段属性的映射
@@ -56,7 +57,7 @@ public final class ClassMapper {
      */
     private void initFieldMapper(Class obj){
         Field[] fields = obj.getDeclaredFields();
-        Map<String, Method> methodMap = ReflectUtil.poGetterMethodsMap(obj);
+        Map<String, Method> methodMap = ReflectUtils.poGetterMethodsMap(obj);
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
             String fieldName = field.getName();
@@ -90,6 +91,9 @@ public final class ClassMapper {
         if(obj.isAnnotationPresent(Table.class)){
             Table table = (Table) obj.getAnnotation(Table.class);
             tableName = table.name();
+        }else if (obj.isAssignableFrom(DateTable.class)){
+            isDynamicTableName = true;
+            tableName = "$dateTable";
         }else{
             this.tableName =  StringUtils.underscoreName(obj.getSimpleName());
         }
@@ -115,11 +119,18 @@ public final class ClassMapper {
 
     /**
      * 映射 后的表名
+     * 可能是动态表，每次获取表名都需要做映射
      * @return
      */
     public String mapTableName() {
-        return tableName;
+        if (isDynamicTableName){
+            return ReflectUtils.getDateTableName(obj,new Date());
+        }else{
+            return tableName;
+        }
     }
+
+
 
     /**
      * 映射后的主键

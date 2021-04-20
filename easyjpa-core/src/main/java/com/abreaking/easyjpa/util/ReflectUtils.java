@@ -1,6 +1,10 @@
 package com.abreaking.easyjpa.util;
 
 
+import com.abreaking.easyjpa.exception.EasyJpaException;
+import com.abreaking.easyjpa.mapper.annotation.DateTable;
+import org.apache.commons.lang.time.FastDateFormat;
+
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -9,8 +13,23 @@ import java.util.*;
  * @author liwei_paas
  * @date 2019/11/1
  */
-public final class ReflectUtil {
+public final class ReflectUtils {
 
+    /**
+     * 针对日期表，根据指定日期获取映射后的表名
+     * @param date
+     * @return
+     */
+    public static String getDateTableName(Class obj,Date date){
+        if (obj.isAssignableFrom(DateTable.class)){
+            DateTable table = (DateTable) obj.getAnnotation(DateTable.class);
+            String prefix = table.tablePrefix();
+            String format = table.dateFormat();
+            FastDateFormat dateFormat = FastDateFormat.getInstance(format);
+            return prefix+dateFormat.format(date)+table.tableSuffix();
+        }
+        throw new EasyJpaException(obj+"必须指定@DateTable注解");
+    }
 
     /**
      * 带有getter及setter的属性的getter方法。class中所有的
