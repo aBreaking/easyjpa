@@ -36,10 +36,6 @@ public class Page<T> implements Serializable {
      * 总页数
      */
     private int pages = 0;
-    /**
-     * 排序
-     */
-    private String orderBy;
 
     /**
      * 分页后的结果数据
@@ -144,13 +140,6 @@ public class Page<T> implements Serializable {
         this.pages = pages;
     }
 
-    public String getOrderBy() {
-        return orderBy;
-    }
-
-    public void setOrderBy(String orderBy) {
-        this.orderBy = orderBy;
-    }
 
     public List getResult() {
         return result;
@@ -169,7 +158,6 @@ public class Page<T> implements Serializable {
                 ", endRow=" + endRow +
                 ", total=" + total +
                 ", pages=" + pages +
-                ", orderBy='" + orderBy + '\'' +
                 '}';
     }
 }
