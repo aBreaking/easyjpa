@@ -70,7 +70,7 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
         String tableName = easyJpa.getTableName();
 
         List<Map> list = doCachesSelect(tableName,new JavaMapRowMapper(),()->{
-            StringBuilder counterBuilder = new StringBuilder("SELECT COUNT(*) counter FROM ");
+            StringBuilder counterBuilder = new StringBuilder("SELECT COUNT(*) COUNTER FROM ");
             counterBuilder.append(tableName);
             ColumnMatrix matrix = new AxisColumnMatrix();
             ConditionBuilderDelegate delegate = new ConditionBuilderDelegate(easyJpa);
@@ -79,7 +79,8 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
         });
 
         Map map = list.get(0);
-        Long total = (Long) map.get("counter");
+        Object counter = map.get("COUNTER");
+        long total = new Double(String.valueOf(counter)).longValue();
         page.setTotal(total);
 
         return page;

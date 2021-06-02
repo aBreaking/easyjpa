@@ -42,7 +42,7 @@ public class ClassRowMapper<T> implements RowMapper {
         }
         for (int i = 1; i <= columnCount; i++) {
             String columnName = metaData.getColumnName(i);
-            FieldMapper fieldMapper = classMapper.mapField(columnName);
+            FieldMapper fieldMapper = classMapper.mapField(columnName.toLowerCase());
             if (fieldMapper ==null){
                 continue;
             }
