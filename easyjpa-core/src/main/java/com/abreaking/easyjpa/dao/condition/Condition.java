@@ -87,6 +87,14 @@ public class Condition {
         return new Condition(fcName, "BETWEEN ? AND ?", new Object[]{s, b});
     }
 
+    public static Condition isNull(String fcName){
+        return new Condition(fcName, " IS NULL");
+    }
+
+    public static Condition isNotNull(String fcName){
+        return new Condition(fcName, " IS NOT NULL");
+    }
+
     public String getFcName() {
         return fcName;
     }

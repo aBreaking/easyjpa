@@ -6,6 +6,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Objects;
 
 /**
  *
@@ -119,5 +120,19 @@ public class ConnectionHolder {
         return builder.toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ConnectionHolder holder = (ConnectionHolder) o;
+        return Objects.equals(jdbcUrl, holder.jdbcUrl) &&
+                Objects.equals(jdbcUserName, holder.jdbcUserName) &&
+                Objects.equals(jdbcDriverName, holder.jdbcDriverName);
+    }
 
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(jdbcUrl, jdbcUserName, jdbcDriverName);
+    }
 }

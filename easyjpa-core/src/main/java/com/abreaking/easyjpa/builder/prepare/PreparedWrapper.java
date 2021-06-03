@@ -5,6 +5,7 @@ import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.util.SqlUtils;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * 预处理的sql及其参数封装
@@ -65,6 +66,25 @@ public class PreparedWrapper {
 
     public void setTypes(int[] types) {
         this.types = types;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PreparedWrapper that = (PreparedWrapper) o;
+        return Objects.equals(preparedSql, that.preparedSql) &&
+                Arrays.equals(values, that.values) &&
+                Arrays.equals(types, that.types);
+    }
+
+    @Override
+    public int hashCode() {
+
+        int result = Objects.hash(preparedSql);
+        result = 31 * result + Arrays.hashCode(values);
+        result = 31 * result + Arrays.hashCode(types);
+        return result;
     }
 
     @Override
