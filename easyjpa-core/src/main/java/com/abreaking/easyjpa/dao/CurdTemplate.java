@@ -7,12 +7,14 @@ import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
 import com.abreaking.easyjpa.executor.ConnectionHolder;
+import com.abreaking.easyjpa.executor.JdbcDsSqlExecutor;
 import com.abreaking.easyjpa.executor.JdbcSqlExecutor;
 import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.RowMapper;
 import com.abreaking.easyjpa.mapper.matrix.Matrix;
 import com.abreaking.easyjpa.builder.*;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -35,6 +37,11 @@ public class CurdTemplate {
     public CurdTemplate(Connection connection) {
         this(new JdbcSqlExecutor(connection));
     }
+
+    public CurdTemplate(DataSource dataSource) {
+        this(new JdbcDsSqlExecutor(dataSource));
+    }
+
 
     /**
      * 通用的查询，根据条件查询，返回rowMapper封装的对象

@@ -21,6 +21,7 @@ import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
 import com.abreaking.easyjpa.builder.ConditionBuilderDelegate;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -40,6 +41,10 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
 
     public EasyJpaDaoImpl(Connection connection) {
         super(connection);
+    }
+
+    public EasyJpaDaoImpl(DataSource dataSource) {
+        super(dataSource);
     }
 
     @Override
