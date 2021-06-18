@@ -1,9 +1,11 @@
 package com.abreaking.easyjpa.dao;
 
 import com.abreaking.easyjpa.User;
+import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
 import com.abreaking.easyjpa.dao.condition.Condition;
 import com.abreaking.easyjpa.dao.condition.Page;
 import com.abreaking.easyjpa.dao.impl.EasyJpaDaoImpl;
+import com.abreaking.easyjpa.mapper.JavaMapRowMapper;
 import com.abreaking.easyjpa.support.EasyJpa;
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,6 +13,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -21,6 +24,17 @@ import java.util.List;
 public class EasyJpaDaoTest {
 
     public static EasyJpaDao dao = new EasyJpaDaoImpl(MyDataSource.localhostConnection());
+
+    @Test
+    public void test_anything(){
+        List<Map> list = dao.query(new PreparedWrapper("select count(*) counter from user where 1=2"), new JavaMapRowMapper());
+        Long count = (Long) list.get(0).get("counter");
+        System.out.println(count);
+    }
+
+    @Test
+    public void test_curdTemplateSelect(){
+    }
 
     @Test
     public void test_batchInsert(){
@@ -106,7 +120,7 @@ public class EasyJpaDaoTest {
         EasyJpa easyJpa = new EasyJpa(User.class);
         //easyJpa.and(Condition.to("height","<",2));
         //easyJpa.orderBy("height");
-        Page page = new Page(2,2);
+        Page page = new Page(1,2);
         dao.queryByPage(easyJpa,page);
         System.out.println(page); //分页的数据
         System.out.println(page.getResult()); //第2页，三行数据

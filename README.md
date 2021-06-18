@@ -315,8 +315,8 @@ public void test08(){
     User user = new User();
     user.setUserName("%王%");
     user.setHeight(1.7F);
-    PlaceholderMapper placeholderMapper = EasyJpa.buildPlaceholder(prepareSql, user);
-    List<User> list = dao.queryByPlaceholderSql(placeholderMapper,User.class);
+    PlaceholderMapper placeholderWrapper = EasyJpa.buildPlaceholder(prepareSql, user);
+    List<User> list = dao.queryByPlaceholderSql(placeholderWrapper,User.class);
 }
 ```
 你可以看到，占位符的sql风格很像mybaits里的mapper文件，其实就是借鉴了mybaits的格式。

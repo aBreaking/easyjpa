@@ -24,4 +24,19 @@ public class MyDataSource {
             throw new RuntimeException(e);
         }
     }
+
+    public static Connection bjOracleConnection()  {
+        String jdbcDriver = "oracle.jdbc.OracleDriver";
+        String jdbcUrl = "jdbc:oracle:thin:@//172.18.238.234:1524/tthradb";
+        String jdbcUserName = "esbdb";
+        String jdbcPassword = "Paas#123";
+        try {
+            Class.forName(jdbcDriver);
+            Connection connection = DriverManager.getConnection(jdbcUrl, jdbcUserName, jdbcPassword);
+            connection.setAutoCommit(true); // update/insert/delete 自动提交
+            return connection;
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
 }
