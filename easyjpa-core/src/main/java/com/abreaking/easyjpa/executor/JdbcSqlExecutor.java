@@ -50,6 +50,7 @@ public class JdbcSqlExecutor implements SqlExecutor{
             if (ps!=null){
                 ps.close();
             }
+            connection.close();
         }
     }
 
@@ -66,6 +67,7 @@ public class JdbcSqlExecutor implements SqlExecutor{
             if (ps!=null){
                 ps.close();
             }
+            connection.close();
         }
 
     }

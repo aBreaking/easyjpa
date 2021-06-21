@@ -16,17 +16,20 @@ public class JdbcDsSqlExecutor implements SqlExecutor{
 
     private DataSource dataSource;
 
+    private Connection connection;
+
     public JdbcDsSqlExecutor(DataSource dataSource){
         this.dataSource = dataSource;
+        try {
+            this.connection = dataSource.getConnection();
+        } catch (SQLException e) {
+            throw new EasyJpaException(e);
+        }
     }
 
     @Override
     public Connection getConnection() {
-        try {
-            return dataSource.getConnection();
-        } catch (SQLException e) {
-            throw new EasyJpaException(e);
-        }
+        return connection;
     }
 
     @Override
