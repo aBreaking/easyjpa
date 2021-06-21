@@ -1,7 +1,5 @@
 package com.abreaking.easyjpa.config;
 
-import com.abreaking.easyjpa.util.StringUtils;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,6 +21,10 @@ public class EasyJpaConfiguration {
 
     // 配置的前缀名 ,在配置文件中的配置名一般都是 easyjpa.xxx 这种格式
     public static final String PROPERTIES_PREFIX = "easyjpa";
+
+    static {
+        initConfigurationByProperties();
+    }
 
     /**
      * 根据配置文件初始化配置
@@ -51,14 +53,6 @@ public class EasyJpaConfiguration {
             if (properties.containsKey(key)){
                 configuration.value = String.valueOf(properties.get(key));
                 configuration.hasInitialization = true;
-            }else{
-                // 也支持 aaa_bbb_ccc这样的配置 也可以用 aaaBbbCcc来进行配置
-                String s = StringUtils.deunderscoreName(configuration.name());
-                key = PROPERTIES_PREFIX+ "." + s;
-                if (properties.containsKey(key)){
-                    configuration.value = String.valueOf(properties.get(key));
-                    configuration.hasInitialization = true;
-                }
             }
         }
     }

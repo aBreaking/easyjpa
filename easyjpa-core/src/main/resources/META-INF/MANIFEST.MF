@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: commons-lang-2.6.jar persistence-api-1.0.jar mysql-connect
+ or-java-5.1.42.jar javassist-3.11.0.GA.jar
+Main-Class: 
+

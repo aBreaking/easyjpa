@@ -7,6 +7,7 @@ package com.abreaking.easyjpa.config;
  */
 public enum Configuration {
 
+    useCache("false"),
     cache("lru"),
     cache_lru_max_size("128"),
     ;
