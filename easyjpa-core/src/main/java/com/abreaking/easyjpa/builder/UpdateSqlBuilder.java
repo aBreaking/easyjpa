@@ -45,7 +45,7 @@ public class UpdateSqlBuilder implements SqlBuilder{
 
         delegate.visitWhere(sqlBuilder,columnMatrix);
 
-        return new PreparedWrapper(sqlBuilder.toString(),columnMatrix);
+        return new PreparedWrapper(sqlBuilder.toString(),columnMatrix,table);
     }
 
 }

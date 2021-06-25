@@ -39,6 +39,6 @@ public class SelectSqlBuilder implements SqlBuilder{
 
         delegate.visitPagination(sqlBuilder,columnMatrix);
 
-        return new PreparedWrapper(sqlBuilder.toString(),columnMatrix);
+        return new PreparedWrapper(sqlBuilder.toString(),columnMatrix,table);
     }
 }

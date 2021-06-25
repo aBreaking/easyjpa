@@ -57,7 +57,7 @@ public class ReadmeTest {
 
     /*@Test
     public void test08(){
-        String prepareSql = "select user_name,height from ${tableName} where user_name like #{userName} and height>#{height}";
+        String prepareSql = "query user_name,height from ${tableName} where user_name like #{userName} and height>#{height}";
         User user = new User();
         user.setUserName("%王%");
         user.setHeight(1.7F);
@@ -68,7 +68,7 @@ public class ReadmeTest {
 
     @Test
     public void test07(){
-        String prepareSql = "select user_id,user_name from user where user_name like ? and height>?";
+        String prepareSql = "query user_id,user_name from user where user_name like ? and height>?";
         PreparedMapper preparedMapper = EasyJpa.buildPrepared(prepareSql, "%王%", 1.7F);
         List<User> list = dao.queryByPreparedSql(preparedMapper,User.class);
         prettyPrint(list);

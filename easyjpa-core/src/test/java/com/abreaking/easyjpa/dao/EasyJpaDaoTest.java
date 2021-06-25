@@ -27,7 +27,7 @@ public class EasyJpaDaoTest {
 
     @Test
     public void test_anything(){
-        List<Map> list = dao.query(new PreparedWrapper("select count(*) counter from user where 1=2"), new JavaMapRowMapper());
+        List<Map> list = dao.query(new PreparedWrapper("query count(*) counter from user where 1=2"), new JavaMapRowMapper());
         Long count = (Long) list.get(0).get("counter");
         System.out.println(count);
     }

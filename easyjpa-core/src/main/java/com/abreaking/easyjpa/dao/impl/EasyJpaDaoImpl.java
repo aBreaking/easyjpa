@@ -6,6 +6,7 @@ import com.abreaking.easyjpa.dao.condition.SqlConst;
 import com.abreaking.easyjpa.exception.EasyJpaException;
 import com.abreaking.easyjpa.exception.EasyJpaSqlExecutionException;
 import com.abreaking.easyjpa.exception.NoIdOrPkSpecifiedException;
+import com.abreaking.easyjpa.executor.EasyJpaExecutor;
 import com.abreaking.easyjpa.mapper.ClassRowMapper;
 import com.abreaking.easyjpa.dao.condition.Conditions;
 import com.abreaking.easyjpa.dao.condition.Condition;
@@ -15,7 +16,6 @@ import com.abreaking.easyjpa.support.EasyJpa;
 import com.abreaking.easyjpa.dao.EasyJpaDao;
 import com.abreaking.easyjpa.dao.condition.Page;
 import com.abreaking.easyjpa.builder.prepare.PreparedWrapper;
-import com.abreaking.easyjpa.executor.SqlExecutor;
 import com.abreaking.easyjpa.mapper.JavaMapRowMapper;
 import com.abreaking.easyjpa.mapper.matrix.AxisColumnMatrix;
 import com.abreaking.easyjpa.mapper.matrix.ColumnMatrix;
@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
 
-    public EasyJpaDaoImpl(SqlExecutor sqlExecutor) {
+    public EasyJpaDaoImpl(EasyJpaExecutor sqlExecutor) {
         super(sqlExecutor);
     }
 
@@ -73,14 +73,14 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
 
         // 该条件下的总数,应该考虑将其缓存
         String tableName = easyJpa.getTableName();
-        StringBuilder counterBuilder = new StringBuilder("SELECT COUNT(*) COUNTER FROM ");
-        counterBuilder.append(tableName);
-        ColumnMatrix matrix = new AxisColumnMatrix();
-        ConditionBuilderDelegate delegate = new ConditionBuilderDelegate(easyJpa);
-        delegate.visitWhere(counterBuilder,matrix);
-        PreparedWrapper preparedWrapper = new PreparedWrapper(counterBuilder.toString(), matrix);
-
-        List<Map> list = doCachesSelect(tableName,new JavaMapRowMapper(),preparedWrapper,true);
+        List<Map> list = executor.query(()->{
+            StringBuilder counterBuilder = new StringBuilder("SELECT COUNT(*) COUNTER FROM ");
+            counterBuilder.append(tableName);
+            ColumnMatrix matrix = new AxisColumnMatrix();
+            ConditionBuilderDelegate delegate = new ConditionBuilderDelegate(easyJpa);
+            delegate.visitWhere(counterBuilder,matrix);
+            return new PreparedWrapper(counterBuilder.toString(), matrix);
+        },new JavaMapRowMapper());
 
         Map map = list.get(0);
         Object counter = map.get("COUNTER");
@@ -150,53 +150,28 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
             return;
         }
         //使用事务，批量insert
-        Connection connection = sqlExecutor.getConnection();
-        Boolean autoCommit = null;
-        try {
-            autoCommit = connection.getAutoCommit();
-            connection.setAutoCommit(false);
-            for (T t : list){
-                EasyJpa easyJpa = new EasyJpa(t);
-                super.insert(easyJpa.getTableName(),easyJpa.matrix());
-            }
-            connection.commit();
-        } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException e1) {
-                throw new EasyJpaException(e1);
-            }
-            throw new EasyJpaSqlExecutionException("batch insert failed",e);
-        }finally {
-            if (autoCommit!=null){
-                try {
-                    connection.setAutoCommit(autoCommit);
-                } catch (SQLException e) {
-                    throw new EasyJpaException(e);
-                }
-            }
+        for (T t : list){
+            insert(t);
         }
     }
 
     @Override
     public <T> List<T> query(PlaceholderWrapper placeholderSql, RowMapper<T> resultRowMapper) {
-        PlaceHolderSqlBuilder placeHolderSqlBuilder = new PlaceHolderSqlBuilder(placeholderSql);
-        PreparedWrapper preparedWrapper = placeHolderSqlBuilder.visit(null);
-        return doSelect(resultRowMapper,preparedWrapper);
+        return executor.query(()->new PlaceHolderSqlBuilder(placeholderSql).visit(null),resultRowMapper);
     }
 
     @Override
     public <T> List<T> query(PreparedWrapper preparedSql, RowMapper<T> resultRowMapper) {
-        return doSelect(resultRowMapper,preparedSql);
+        return executor.query(()->preparedSql,resultRowMapper);
     }
 
     @Override
     public void execute(PlaceholderWrapper placeholderWrapper) {
-        doExecute(new PlaceHolderSqlBuilder(placeholderWrapper).visit(null));
+        executor.execute(()->new PlaceHolderSqlBuilder(placeholderWrapper).visit(null));
     }
 
     @Override
     public void execute(PreparedWrapper preparedSql) {
-        doExecute(preparedSql);
+        executor.execute(()->preparedSql);
     }
 }

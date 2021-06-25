@@ -14,6 +14,8 @@ import java.util.Objects;
  */
 public class PreparedWrapper {
 
+    private String tableName; //表名
+
     private String preparedSql; //预处理的sql语句
 
     private Object[] values; //sql里的参数值
@@ -44,6 +46,13 @@ public class PreparedWrapper {
         this.types = matrix.types();
     }
 
+    public PreparedWrapper(String preparedSql, Matrix matrix,String tableName) {
+        this(preparedSql,matrix);
+        this.tableName = tableName;
+    }
+
+
+
     public String getPreparedSql() {
         return preparedSql;
     }
@@ -66,6 +75,14 @@ public class PreparedWrapper {
 
     public void setTypes(int[] types) {
         this.types = types;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 
     @Override

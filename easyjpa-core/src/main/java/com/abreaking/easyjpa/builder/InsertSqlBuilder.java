@@ -39,7 +39,7 @@ public class InsertSqlBuilder implements SqlBuilder{
         }
         StringUtils.cutAtLastSeparator(sqlBuilder,",");
         sqlBuilder.append(")");
-        return new PreparedWrapper(sqlBuilder.toString(),matrix);
+        return new PreparedWrapper(sqlBuilder.toString(),matrix,table);
     }
 
 }

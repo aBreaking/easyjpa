@@ -26,6 +26,6 @@ public class DeleteSqlBuilder implements SqlBuilder{
         sqlBuilder.append(table);
         ConditionBuilderDelegate delegate = new ConditionBuilderDelegate(conditions);
         delegate.visitWhere(sqlBuilder,matrix);
-        return new PreparedWrapper(sqlBuilder.toString(),matrix);
+        return new PreparedWrapper(sqlBuilder.toString(),matrix,table);
     }
 }

@@ -31,7 +31,7 @@ public class PlaceHolderSqlBuilderTest {
     @Test
     public void test_safe(){
         Map<String,Object> argMap = new HashMap<>();
-        String sql = "select * from user where user_id=${userId}";
+        String sql = "query * from user where user_id=${userId}";
         argMap.put("userId","3; delete from user where user_id=3");
         PlaceholderWrapper mapper = new PlaceholderWrapper(sql, argMap);
         EasyJpaDao dao = ReadmeTest.dao;
@@ -48,7 +48,7 @@ public class PlaceHolderSqlBuilderTest {
         placeholderWrapper.setArgMap(map);
         placeholderWrapper.addArgByClass(User.class);
 
-        placeholderWrapper.append("select * from ${User} where 1=1 ");
+        placeholderWrapper.append("query * from ${User} where 1=1 ");
         placeholderWrapper.appendIfArgValueNotNull(" and user_name like #{userName}","userName");
         placeholderWrapper.appendIfArgValueNotNull(" and height > #{height}","height");
 

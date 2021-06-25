@@ -30,7 +30,7 @@ public interface EasyJpaDao {
 
     /**
      * 将对象本身就视为查询条件，进行条件查询。
-     * 它只会是全字匹配，即类似：select * from table where column1=? and column2=?
+     * 它只会是全字匹配，即类似：query * from table where column1=? and column2=?
      * @param condition
      * @return
      */

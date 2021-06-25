@@ -10,6 +10,7 @@ public enum Configuration {
     useCache("false"),
     cache("lru"),
     cache_lru_max_size("128"),
+    showSql("false");
     ;
 
     String value; // 默认值
