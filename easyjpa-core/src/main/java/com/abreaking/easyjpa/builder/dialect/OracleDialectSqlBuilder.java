@@ -13,8 +13,8 @@ public class OracleDialectSqlBuilder extends DialectSqlBuilder{
 
     @Override
     public void visitPage(StringBuilder sqlBuilder,ColumnMatrix columnMatrix, int pageStartIndex, int pageSize) {
-        int rowStart = pageStartIndex;
-        int rowEnd = pageSize+rowStart;
+        int rowStart = pageStartIndex+1;
+        int rowEnd = pageSize+pageStartIndex;
         sqlBuilder.insert(0,"SELECT * FROM (SELECT ej_tmp.*, ROWNUM ej_rowStart FROM ( ");
         sqlBuilder.append(" ) ej_tmp WHERE ROWNUM <= ?) WHERE ej_rowStart >= ?");
         columnMatrix.put("rowEnd",SqlUtils.getSqlType(Integer.class),rowEnd);
