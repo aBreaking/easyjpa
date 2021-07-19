@@ -5,6 +5,7 @@ import com.abreaking.easyjpa.util.ReflectUtils;
 import com.abreaking.easyjpa.util.StringUtils;
 
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -65,6 +66,11 @@ public final class ClassMapper {
                 //如果该字段不是 getter setter字段，就不用再继续了
                 continue;
             }
+            if (field.isAnnotationPresent(Transient.class)){
+                //如果Transient 标识的字段也不用继续了
+                continue;
+            }
+
             FieldMapper fieldMapper = new FieldMapper(field,methodMap.get(fieldName));
             fieldsMapper.put(fieldName, fieldMapper);
             fieldsMapper.put(fieldMapper.getColumnName(), fieldMapper);
