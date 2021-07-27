@@ -44,6 +44,15 @@ public interface EasyJpaDao {
     <T> List<T> queryByCondition(EasyJpa<T> condition);
 
     /**
+     * 自定义查询条件以及返回类型
+     * @param condition 查询条件
+     * @param rowMapper 返回类型处理
+     * @param <T>
+     * @return
+     */
+    <T> List<T> queryByCondition(EasyJpa<T> condition,RowMapper rowMapper);
+
+    /**
      * 统一封装的分页查询。
      * 与EasyJpa里自带的limit orderby 分页方法不同的是，Page封装了返回可直接与前端交互的查询结果，包括分页结果、总页数、总记录数等。
      *  而单独使用EasyJpa进行的条件查询只返回分页结果

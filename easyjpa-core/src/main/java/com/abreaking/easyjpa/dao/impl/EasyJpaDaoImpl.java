@@ -49,13 +49,19 @@ public class EasyJpaDaoImpl extends CurdTemplate implements EasyJpaDao {
 
     @Override
     public List query(Object condition) {
-        EasyJpa easyJpa = new EasyJpa(condition);
-        return queryByCondition(easyJpa);
+        return condition instanceof EasyJpa?
+                queryByCondition((EasyJpa) condition)
+                : queryByCondition(new EasyJpa(condition));
     }
 
     @Override
     public <T> List<T> queryByCondition(EasyJpa<T> condition) {
         return super.select(condition.getTableName(),condition,new ClassRowMapper(condition.getObj()));
+    }
+
+    @Override
+    public <T> List<T> queryByCondition(EasyJpa<T> condition, RowMapper rowMapper) {
+        return super.select(condition.getTableName(),condition,rowMapper);
     }
 
     /**
