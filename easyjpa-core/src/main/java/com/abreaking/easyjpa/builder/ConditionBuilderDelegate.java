@@ -83,21 +83,29 @@ public class ConditionBuilderDelegate {
         for (Condition condition : conditions){
             String columnName = condition.getFcName();
             Object[] values = condition.getValues();
-            if (StringUtils.isEmpty(columnName) || values.length == 0){
-                throw new EasyJpaException("every condition must specify column name and value");
-            }
-            Integer type = condition.getSqlType();
-            if (type==null)type = SqlUtils.getSqlTypeByValue(values[0]);
-            sqlBuilder.append(columnName).append(" ");
-            sqlBuilder.append(condition.getPrepare()).append(" ");
-            sqlBuilder.append(separator).append(" ");
-            if (values.length==1){
-                matrix.put(columnName,type,values[0]);
-            }else if (values.length>1){
-                for (int i = 0; i < values.length; i++) {
-                    matrix.put(columnName+"_"+i,type,values[i]);
+            String prepare = condition.getPrepare();
+            if (prepare.indexOf("?")==-1){
+                if (StringUtils.isNotEmpty(columnName)){
+                    sqlBuilder.append(columnName).append(" ");
+                }
+                sqlBuilder.append(prepare);
+            }else{
+                if (StringUtils.isEmpty(columnName) || values.length == 0){
+                    throw new EasyJpaException("every condition must specify column name and value");
+                }
+                Integer type = condition.getSqlType();
+                if (type==null)type = SqlUtils.getSqlTypeByValue(values[0]);
+                sqlBuilder.append(columnName).append(" ");
+                sqlBuilder.append(condition.getPrepare()).append(" ");
+                if (values.length==1){
+                    matrix.put(columnName,type,values[0]);
+                }else if (values.length>1){
+                    for (int i = 0; i < values.length; i++) {
+                        matrix.put(columnName+"_"+i,type,values[i]);
+                    }
                 }
             }
+            sqlBuilder.append(separator).append(" ");
         }
         StringUtils.cutAtLastSeparator(sqlBuilder,separator);
 
