@@ -6,7 +6,7 @@ EasyJpa是一个轻量的、全自的动对象关系映射（ORM）Java框架。
 
 1. 开箱即用
 
-EasyJpa上手简单，只要有数据源连接Connection，甚至可以不需要额外的配置，你就可以将EasyJpa轻松应用到你工程的dao层，各种curd操作更easy了。
+EasyJpa上手简单，只要有数据源连接，甚至可以不需要额外的配置，你就可以将EasyJpa轻松应用到你工程的dao层，各种curd操作更easy了。
 
 2. 无侵入性
 
