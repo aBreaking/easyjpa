@@ -38,10 +38,15 @@ public class ConditionBuilderDelegate {
     }
 
     public void visitSelect(StringBuilder builder) {
+        builder.append("SELECT ");
         if (conditions.isEmpty(SqlConst.SELECT)){
-            builder.append("SELECT *");
+            builder.append("*");
         }else{
-            conditions.getConditions(SqlConst.SELECT).forEach(i->builder.append(i).append(","));
+            Condition select = this.conditions.getConditions(SqlConst.SELECT).get(0);
+            Object[] values = select.getValues();
+            for (Object v : values){
+                builder.append(v).append(",");
+            }
             StringUtils.cutAtLastSeparator(builder,",");
         }
     }
