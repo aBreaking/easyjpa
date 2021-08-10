@@ -8,5 +8,5 @@ package com.abreaking.easyjpa.dao.condition;
 public enum  SqlConst {
     SELECT,INSERT,UPDATE,DELETE,
     AND,OR,ORDER_BY,LIMIT,
-    LIKE,IN,BETWEEN
+    LIKE,IN,BETWEEN,GROUP_BY
 }

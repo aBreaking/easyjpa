@@ -55,6 +55,8 @@ public class SqlUtils {
             case Types.DOUBLE : return Double.class;
             case Types.NUMERIC : return Double.class;
             case Types.TIMESTAMP : return Date.class;
+            case Types.BLOB : return Blob.class;
+            case Types.CLOB : return Clob.class;
             default: return String.class;
         }
     }

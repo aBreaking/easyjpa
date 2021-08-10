@@ -25,10 +25,10 @@ public class ConditionBuilderDelegate {
     }
 
     public void visitOrderBy(StringBuilder builder){
-        if (conditions.isEmpty(SqlConst.ORDER_BY)){
+        List<Condition> orderBy = conditions.getConditions(SqlConst.ORDER_BY);
+        if (isBlank(orderBy)){
             return;
         }
-        List<Condition> orderBy = conditions.getConditions(SqlConst.ORDER_BY);
         builder.append(" ORDER BY ");
         for (Condition condition : orderBy){
             builder.append(condition.getFcName()).append(" ");
@@ -39,10 +39,11 @@ public class ConditionBuilderDelegate {
 
     public void visitSelect(StringBuilder builder) {
         builder.append("SELECT ");
-        if (conditions.isEmpty(SqlConst.SELECT)){
+        List<Condition> list = this.conditions.getConditions(SqlConst.SELECT);
+        if (isBlank(list)){
             builder.append("*");
         }else{
-            Condition select = this.conditions.getConditions(SqlConst.SELECT).get(0);
+            Condition select = list.get(0);
             Object[] values = select.getValues();
             for (Object v : values){
                 builder.append(v).append(",");
@@ -52,29 +53,31 @@ public class ConditionBuilderDelegate {
     }
 
     public void visitAnd(StringBuilder sqlBuilder,ColumnMatrix matrix){
-        if (conditions.isEmpty(SqlConst.AND)){
+        List<Condition> list = this.conditions.getConditions(SqlConst.AND);
+        if (isBlank(list)){
             return;
         }
         sqlBuilder.append(" WHERE ");
-        add(conditions.getConditions(SqlConst.AND),"AND",sqlBuilder,matrix);
+        add(list,"AND",sqlBuilder,matrix);
     }
 
     public void visitWhere(StringBuilder sqlBuilder,ColumnMatrix matrix){
-        if (conditions.isEmpty(SqlConst.AND) && conditions.isEmpty(SqlConst.OR)){
+        List<Condition> and = conditions.getConditions(SqlConst.AND);
+        List<Condition> or = conditions.getConditions(SqlConst.OR);
+
+        if (isBlank(and) && isBlank(or)){
             return;
         }
-
         sqlBuilder.append(" WHERE ");
-
-        if (!conditions.isEmpty(SqlConst.AND)){
-            add(conditions.getConditions(SqlConst.AND),"AND",sqlBuilder,matrix);
+        if (!isBlank(and)){
+            add(and,"AND",sqlBuilder,matrix);
         }
-        if (!conditions.isEmpty(SqlConst.OR)){
-            if (!conditions.isEmpty(SqlConst.AND)){
+        if (!isBlank(or)){
+            if (!isBlank(and)){
                 sqlBuilder.append(" AND ");
             }
             sqlBuilder.append("(");
-            add(conditions.getConditions(SqlConst.OR),"OR",sqlBuilder,matrix);
+            add(or,"OR",sqlBuilder,matrix);
             sqlBuilder.append(")");
         }
     }
@@ -112,10 +115,10 @@ public class ConditionBuilderDelegate {
     }
 
     public void visitPagination(StringBuilder sqlBuilder,ColumnMatrix columnMatrix) {
-        if (conditions.isEmpty(SqlConst.LIMIT)){
+        List<Condition> limit = conditions.getConditions(SqlConst.LIMIT);
+        if (isBlank(limit)){
             return;
         }
-        List<Condition> limit = conditions.getConditions(SqlConst.LIMIT);
         Condition condition = limit.get(0);
         Object[] values = condition.getValues();
         if (values==null || values.length==0){
@@ -133,4 +136,19 @@ public class ConditionBuilderDelegate {
         defaultDialectSqlBuilder.visitPage(sqlBuilder,columnMatrix,pageStartIndex,pageSize);
     }
 
+    public void visitGroupBy(StringBuilder builder) {
+        List<Condition> groupBy = conditions.getConditions(SqlConst.GROUP_BY);
+        if (isBlank(groupBy)){
+            return;
+        }
+        builder.append(" GROUP BY ");
+        for (Condition condition : groupBy){
+            builder.append(condition.getFcName()).append(",");
+        }
+        StringUtils.cutAtLastSeparator(builder,",");
+    }
+
+    private boolean isBlank(List list){
+        return list==null || list.isEmpty();
+    }
 }

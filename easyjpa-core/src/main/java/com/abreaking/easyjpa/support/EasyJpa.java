@@ -121,6 +121,12 @@ public final class EasyJpa<T> implements Conditions,MatrixMapper {
         addCondition(SqlConst.ORDER_BY,Condition.to(fieldNameOrColumnName, "ORDER BY", asc ? "ASC" : "DESC"));
     }
 
+    public void groupBy(String...fieldNameOrColumnName){
+        for (String fc : fieldNameOrColumnName){
+            addCondition(SqlConst.GROUP_BY,Condition.to(fc, "GROUP BY",null));
+        }
+    }
+
     public void limit(int start,int offset){
         addCondition(SqlConst.LIMIT,Condition.prepare("limit ?,?",start,offset));
     }

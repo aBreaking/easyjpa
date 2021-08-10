@@ -4,7 +4,7 @@ import com.abreaking.easyjpa.util.SqlUtils;
 
 import java.sql.*;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -27,7 +27,7 @@ public class JavaMapRowMapper implements RowMapper{
     public Map mapRow(ResultSet rs, int rowNum) throws SQLException {
         ResultSetMetaData metaData = rs.getMetaData();
         int columnCount = metaData.getColumnCount();
-        Map<String,Object> map = new HashMap<>(columnCount);
+        Map<String,Object> map = new LinkedHashMap<>(columnCount);
         for (int i = 1; i <= columnCount; i++) {
             int columnType = metaData.getColumnType(i);
             String columnName = metaData.getColumnName(i);

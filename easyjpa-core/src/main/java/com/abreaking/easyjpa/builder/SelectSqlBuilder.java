@@ -35,6 +35,8 @@ public class SelectSqlBuilder implements SqlBuilder{
 
         delegate.visitWhere(sqlBuilder,columnMatrix);
 
+        delegate.visitGroupBy(sqlBuilder);
+
         delegate.visitOrderBy(sqlBuilder);
 
         delegate.visitPagination(sqlBuilder,columnMatrix);
