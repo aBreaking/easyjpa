@@ -55,6 +55,12 @@ public final class EasyJpa<T> implements Conditions,MatrixMapper {
                 Method getterMethod = fieldMapper.getGetterMethod();
                 Object value = getterMethod.invoke(o);
                 if (value!=null){
+                    if (value instanceof String){ //空字符串也不应该考虑
+                        String v = (String) value;
+                        if (v.isEmpty()){
+                            continue;
+                        }
+                    }
                     String columnName = fieldMapper.getColumnName();
                     int columnType = fieldMapper.getColumnType();
                     columnMatrix.put(columnName,columnType,value);
