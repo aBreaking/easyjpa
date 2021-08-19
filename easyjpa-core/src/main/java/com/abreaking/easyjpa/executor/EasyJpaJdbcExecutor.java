@@ -146,9 +146,9 @@ public class EasyJpaJdbcExecutor implements EasyJpaExecutor{
     private static void setValue(PreparedStatement ps, int paramIndex, int sqlType, Object inValue) throws SQLException {
 
         if (sqlType == Types.VARCHAR || sqlType == Types.LONGVARCHAR ) {
-            ps.setString(paramIndex, inValue.toString());
+            ps.setString(paramIndex, String.valueOf(inValue));
         }else if (sqlType == Types.NVARCHAR || sqlType == Types.LONGNVARCHAR) {
-            ps.setNString(paramIndex, inValue.toString());
+            ps.setNString(paramIndex, String.valueOf(inValue));
         }else if (sqlType == Types.DECIMAL || sqlType == Types.NUMERIC) {
             ps.setObject(paramIndex, inValue, sqlType);
         }else if (sqlType == Types.BOOLEAN) {
