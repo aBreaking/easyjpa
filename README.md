@@ -226,7 +226,7 @@ UPDATE user SET birthday= ? WHERE user_name LIKE ?
 ## 查（SELECT）
 select 操作应该是数据库最多的操作了吧。easyJpa提供了若干方法来进行条件查询，包括`EasyJpaDao.get`,`EasyJpaDao.query`。
 
-1. EasyJpaDa.get：直接根据主键来查询唯一的一条数据。
+1. EasyJpaDao.get：直接根据主键来查询唯一的一条数据。
 ```java
 @Test
 public void test04(){
@@ -236,7 +236,7 @@ public void test04(){
 
 接下来的条件查询，先insert若干条user数据。
 
-2. EasyJpaDa.query，将对象本身作为条件来进行查询：
+2. EasyJpaDao.query，将对象本身作为条件来进行查询：
 
 ```java
 @Test
