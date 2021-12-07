@@ -9,6 +9,7 @@ import com.abreaking.easyjpa.builder.dialect.DialectSqlBuilder;
 import com.abreaking.easyjpa.util.SqlUtils;
 import com.abreaking.easyjpa.util.StringUtils;
 
+import java.sql.Types;
 import java.util.List;
 
 /**
@@ -97,7 +98,14 @@ public class ConditionBuilderDelegate {
                     throw new EasyJpaException("every condition must specify column name and value");
                 }
                 Integer type = condition.getSqlType();
-                if (type==null)type = SqlUtils.getSqlTypeByValue(values[0]);
+
+                if (type==null){
+                    for (int i = 0; i < values.length; i++) { // 以value 里的首个不为null的值类型作为type
+                        if ((type = SqlUtils.getSqlTypeByValue(values[i]))!=Types.NULL){
+                            break;
+                        }
+                    }
+                }
                 sqlBuilder.append(columnName).append(" ");
                 sqlBuilder.append(condition.getPrepare()).append(" ");
                 if (values.length==1){
