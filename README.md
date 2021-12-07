@@ -295,12 +295,14 @@ public void test06() throws ParseException {
 1. 预处理Sql
 
 前面你其实可以看到，所有的easyJpa的操作，最终都会转换成带`?`这样的预处理sql，所以，你也可以直接写一条预处理的sql手动执行：
+
 ```java
 @Test
 public void test07(){
-    String prepareSql = "select user_id,user_name from user where user_name like ? and height>?";
-    PreparedMapper preparedMapper = EasyJpa.buildPrepared(prepareSql, "%王%", 1.7F);
-    List<User> list = dao.queryByPreparedSql(preparedMapper,User.class);
+    String sql = "select user_id,user_name from user where user_name like ? and height>?";
+    PreparedWrapper preparedWrapper = new PreparedWrapper(sql, "%王%", 1.7F); // 对预处理的sql以及参数进行封装
+    RowMapper rowMapper = new ClassRowMapper(User.class);  // 执行完sql后的返回类型为User类型
+    List<User> list = dao.query(preparedWrapper, rowMapper); //查询结果返回List<User> 
 }
 ```
 
@@ -311,15 +313,17 @@ public void test07(){
 ```java
 @Test
 public void test08(){
-    String prepareSql = "select user_name,height from ${tableName} where user_name like #{userName} and height>#{height}";
+    String prepareSql = "select user_name,height from ${tableName} where user_name like #{userName} and height>#{height}"; //占位符sql
+    PlaceholderWrapper placeholderWrapper = new PlaceholderWrapper(prepareSql); // 用PlaceholderWrapper来封装占位符的sql
     User user = new User();
     user.setUserName("%王%");
     user.setHeight(1.7F);
-    PlaceholderMapper placeholderWrapper = EasyJpa.buildPlaceholder(prepareSql, user);
-    List<User> list = dao.queryByPlaceholderSql(placeholderWrapper,User.class);
+    placeholderWrapper.addArgByEntity(user); //设置user对象为占位符的内容
+    RowMapper rowMapper = new ClassRowMapper(User.class);  // 执行完sql后的返回类型为User类型
+    List<User> list = dao.query(placeholderWrapper,rowMapper);
 }
 ```
 你可以看到，占位符的sql风格很像mybaits里的mapper文件，其实就是借鉴了mybaits的格式。
 
-然后可能还会注意到程序里并没有指定`${tableName}`这个参数，但是程序还是执行成功了。这是因为如果你传入的是一个实体类，EasyJpa会自动获取到该类对应的表名，然后注入到placeholderSql里。后面你会看到更多细节。
+然后可能还会注意到程序里并没有指定`${tableName}`这个参数，但是程序还是执行成功了。这是因为如果你传入的是一个实体类，EasyJpa会自动获取到该类对应的表名，然后注入到placeholderSql里。后面你会看到更多的用法。
 
